@@ -2335,6 +2335,145 @@ ERLH_W_Two_Column.prototype = {
     },
 };
 /**
+ * Created by erinsasha on 22/05/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.org_id
+ * @param options.dont_use_popup
+ * @param options.dont_add_header
+ * @param options.header
+ * @param options.on_close
+ * @param options.on_cancel
+ * @param options.on_chosen
+ * @constructor
+ */
+function ERLH_W_Employee_Choose_Popup(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+
+    this.org_id = options.org_id;
+
+    this._build();
+}
+
+ERLH_W_Employee_Choose_Popup.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Employee_Choose_Popup">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        if(!this.options.dont_add_header) {
+            var header_text = this.options.header ? this.options.header : 'Choose employee';
+            html += '<p class="erlh_header">'+header_text+'</p>';
+        }
+
+        html += '<div class="employees_cont"></div>';
+
+        html += '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_cancel_cont"></span>';
+        html += '<span class="btn_ok_cont"></span>';
+
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this.w_employees_list = new ERLH_W_Employees_List({
+            jq_parent : this.jq_main_content.children('.employees_cont'),
+            add_secret_key : true,
+            on_employee_selected : this._callback_on_employee_selected.bind(this),
+            on_employee_deselected : this._callback_on_employee_deselected.bind(this),
+        });
+        this.w_employees_list.set_org_id(this.org_id);
+
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_cancel = new ERLH_W_Button({
+            html_class : 'btn_cancel',
+            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
+            text : 'Cancel',
+            on_click : this._on_click_btn_cancel.bind(this)
+        });
+
+        this.w_btn_ok = new ERLH_W_Button({
+            html_class : 'btn_ok',
+            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
+            text : 'Ok',
+            disabled : true,
+            on_click : this._on_click_btn_ok.bind(this)
+        });
+
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    close : function() {
+        if(!this.options.dont_remove)
+            this.remove();
+
+        if(this.options.on_close)
+            this.options.on_close();
+    },
+
+    _on_click_btn_cancel : function() {
+        if(this.options.on_cancel)
+            this.options.on_cancel();
+        this.close();
+    },
+
+    _on_click_btn_ok : function() {
+        var employee = this.w_employees_list.get_selected();
+        if(this.options.on_chosen)
+            this.options.on_chosen(employee);
+        this.close();
+    },
+
+    _callback_on_employee_selected : function() {
+        this.w_btn_ok.set_disabled(false);
+    },
+    _callback_on_employee_deselected : function() {
+        this.w_btn_ok.set_disabled(true);
+    },
+};
+/**
  * Created by erinsasha on 01/06/17.
  */
 
@@ -2699,145 +2838,6 @@ ERLH_W_Buy_New_License_Popup.prototype = {
 
 };
 /**
- * Created by erinsasha on 22/05/17.
- */
-
-/**
- *
- * @param options
- * @param options.org_id
- * @param options.dont_use_popup
- * @param options.dont_add_header
- * @param options.header
- * @param options.on_close
- * @param options.on_cancel
- * @param options.on_chosen
- * @constructor
- */
-function ERLH_W_Employee_Choose_Popup(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-
-    this.org_id = options.org_id;
-
-    this._build();
-}
-
-ERLH_W_Employee_Choose_Popup.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Employee_Choose_Popup">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        if(!this.options.dont_add_header) {
-            var header_text = this.options.header ? this.options.header : 'Choose employee';
-            html += '<p class="erlh_header">'+header_text+'</p>';
-        }
-
-        html += '<div class="employees_cont"></div>';
-
-        html += '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_cancel_cont"></span>';
-        html += '<span class="btn_ok_cont"></span>';
-
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this.w_employees_list = new ERLH_W_Employees_List({
-            jq_parent : this.jq_main_content.children('.employees_cont'),
-            add_secret_key : true,
-            on_employee_selected : this._callback_on_employee_selected.bind(this),
-            on_employee_deselected : this._callback_on_employee_deselected.bind(this),
-        });
-        this.w_employees_list.set_org_id(this.org_id);
-
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_cancel = new ERLH_W_Button({
-            html_class : 'btn_cancel',
-            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
-            text : 'Cancel',
-            on_click : this._on_click_btn_cancel.bind(this)
-        });
-
-        this.w_btn_ok = new ERLH_W_Button({
-            html_class : 'btn_ok',
-            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
-            text : 'Ok',
-            disabled : true,
-            on_click : this._on_click_btn_ok.bind(this)
-        });
-
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    close : function() {
-        if(!this.options.dont_remove)
-            this.remove();
-
-        if(this.options.on_close)
-            this.options.on_close();
-    },
-
-    _on_click_btn_cancel : function() {
-        if(this.options.on_cancel)
-            this.options.on_cancel();
-        this.close();
-    },
-
-    _on_click_btn_ok : function() {
-        var employee = this.w_employees_list.get_selected();
-        if(this.options.on_chosen)
-            this.options.on_chosen(employee);
-        this.close();
-    },
-
-    _callback_on_employee_selected : function() {
-        this.w_btn_ok.set_disabled(false);
-    },
-    _callback_on_employee_deselected : function() {
-        this.w_btn_ok.set_disabled(true);
-    },
-};
-/**
  * Created by erinsasha on 11/06/17.
  */
 
@@ -3049,149 +3049,6 @@ ERLH_W_Install_Attach_License.prototype = {
     },
 };
 /**
- * Created by erinsasha on 16/05/17.
- */
-
-/**
- *
- * @param options
- * @param options.user_id
- * @param options.dont_use_popup
- * @param options.dont_add_header
- * @param options.header
- * @param options.on_close
- * @param options.on_cancel
- * @param options.on_chosen
- * @constructor
- */
-function ERLH_W_Install_Choose_Popup(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-
-    this.user_id = options.user_id ? options.user_id : erlh_curr_user.user.id;
-
-    this._build();
-}
-
-ERLH_W_Install_Choose_Popup.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Install_Choose_Popup">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        if(!this.options.dont_add_header) {
-            var header_text = this.options.header ? this.options.header : 'Choose installation';
-            html += '<p class="erlh_header">'+header_text+'</p>';
-        }
-
-        html += '<div class="installs_cont"></div>';
-
-        html += '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_cancel_cont"></span>';
-        html += '<span class="btn_ok_cont"></span>';
-
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this.w_installs_list = new ERLH_W_Installs_List({
-            jq_parent : this.jq_main_content.children('.installs_cont'),
-            add_secret_key : true,
-            on_install_selected : this._callback_on_install_selected.bind(this),
-            on_install_deselected : this._callback_on_install_deselected.bind(this),
-        });
-        this.w_installs_list.set_user_id(this.user_id);
-
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_cancel = new ERLH_W_Button({
-            html_class : 'btn_cancel',
-            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
-            text : 'Cancel',
-            on_click : this._on_click_btn_cancel.bind(this)
-        });
-
-        this.w_btn_ok = new ERLH_W_Button({
-            html_class : 'btn_ok',
-            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
-            text : 'Ok',
-            disabled : true,
-            on_click : this._on_click_btn_ok.bind(this)
-        });
-
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    set_user_id : function(user_id) {
-
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    close : function() {
-        if(!this.options.dont_remove)
-            this.remove();
-
-        if(this.options.on_close)
-            this.options.on_close();
-    },
-
-    _on_click_btn_cancel : function() {
-        if(this.options.on_cancel)
-            this.options.on_cancel();
-        this.close();
-    },
-
-    _on_click_btn_ok : function() {
-        var install = this.w_installs_list.get_selected();
-        if(this.options.on_chosen)
-            this.options.on_chosen(install);
-        this.close();
-    },
-
-    _callback_on_install_selected : function() {
-        this.w_btn_ok.set_disabled(false);
-    },
-    _callback_on_install_deselected : function() {
-        this.w_btn_ok.set_disabled(true);
-    },
-};
-/**
  * Created by erinsasha on 18/05/17.
  */
 
@@ -3374,6 +3231,690 @@ ERLH_W_Install_Register.prototype = {
         });
     },
 
+};
+/**
+ * Created by erinsasha on 16/05/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.user_id
+ * @param options.dont_use_popup
+ * @param options.dont_add_header
+ * @param options.header
+ * @param options.on_close
+ * @param options.on_cancel
+ * @param options.on_chosen
+ * @constructor
+ */
+function ERLH_W_Install_Choose_Popup(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+
+    this.user_id = options.user_id ? options.user_id : erlh_curr_user.user.id;
+
+    this._build();
+}
+
+ERLH_W_Install_Choose_Popup.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Install_Choose_Popup">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        if(!this.options.dont_add_header) {
+            var header_text = this.options.header ? this.options.header : 'Choose installation';
+            html += '<p class="erlh_header">'+header_text+'</p>';
+        }
+
+        html += '<div class="installs_cont"></div>';
+
+        html += '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_cancel_cont"></span>';
+        html += '<span class="btn_ok_cont"></span>';
+
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this.w_installs_list = new ERLH_W_Installs_List({
+            jq_parent : this.jq_main_content.children('.installs_cont'),
+            add_secret_key : true,
+            on_install_selected : this._callback_on_install_selected.bind(this),
+            on_install_deselected : this._callback_on_install_deselected.bind(this),
+        });
+        this.w_installs_list.set_user_id(this.user_id);
+
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_cancel = new ERLH_W_Button({
+            html_class : 'btn_cancel',
+            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
+            text : 'Cancel',
+            on_click : this._on_click_btn_cancel.bind(this)
+        });
+
+        this.w_btn_ok = new ERLH_W_Button({
+            html_class : 'btn_ok',
+            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
+            text : 'Ok',
+            disabled : true,
+            on_click : this._on_click_btn_ok.bind(this)
+        });
+
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    set_user_id : function(user_id) {
+
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    close : function() {
+        if(!this.options.dont_remove)
+            this.remove();
+
+        if(this.options.on_close)
+            this.options.on_close();
+    },
+
+    _on_click_btn_cancel : function() {
+        if(this.options.on_cancel)
+            this.options.on_cancel();
+        this.close();
+    },
+
+    _on_click_btn_ok : function() {
+        var install = this.w_installs_list.get_selected();
+        if(this.options.on_chosen)
+            this.options.on_chosen(install);
+        this.close();
+    },
+
+    _callback_on_install_selected : function() {
+        this.w_btn_ok.set_disabled(false);
+    },
+    _callback_on_install_deselected : function() {
+        this.w_btn_ok.set_disabled(true);
+    },
+};
+/**
+ * Created by erinsasha on 26/04/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.filter
+ * @param options.jq_parent
+ * @param options.is_owner_header_set
+ * @param options.is_admin_header_set
+ * @param options.add_header_filter
+ * @param options.on_employee_selected
+ * @param options.on_employee_deselected
+ * @constructor
+ */
+function ERLH_W_Employees_List(options) {
+    options = options ? options : {};
+
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+    this.filter = options.filter ? options.filter : {};
+
+    this.employees = {};
+    this.users = {};
+
+    this._build();
+}
+
+ERLH_W_Employees_List.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Employees_List">';
+
+        html += '<div class="employees_cont"></div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        var header = [
+            {id : 'id', name : 'ID'}
+        ];
+
+        if (this.options.is_admin_header_set) {
+            header.push({id : 'user_id', name : 'User ID'});
+        }
+
+        header.push({id : 'email', name : 'Email'});
+        header.push({id : 'firstname', name : 'First name'});
+        header.push({id : 'lastname', name : 'Last name'});
+        header.push({id : 'role', name : 'Role', type : ERLH_W_Table.types.id_to_name,
+            map : ERLH_Employee.static.get_roles_ids_to_names()
+        });
+
+        if (this.options.is_admin_header_set) {
+            header.push({id : 'status', name : 'Status', type : ERLH_W_Table.types.id_to_name,
+                map : ERLH_Employee.static.get_status_ids_to_names()});
+            header.push({id : 'created_by', name : 'Created By'});
+            header.push({id : 'created', name : 'Created'});
+            header.push({id : 'updated', name : 'Updated'});
+            header.push({id : 'btn_edit', name : 'Edit',
+                type : ERLH_W_Table.types.button, cell_text : 'Edit',
+                onclick : this._callback_on_click_edit_employee.bind(this)
+            });
+        } else if (this.options.is_owner_header_set) {
+            header.push({id : 'btn_edit', name : 'Edit',
+                type : ERLH_W_Table.types.button, cell_text : 'Edit',
+                onclick : this._callback_on_click_edit_employee.bind(this)
+            });
+        }
+
+        this.w_employees_table = new ERLH_W_Table({
+            jq_parent : this.jq_main.children('.employees_cont'),
+            html_class : 'employees_table',
+            header : header,
+            rows : [],
+            add_filters : this.options.add_header_filter,
+            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
+            on_row_selected : this._callback_on_row_selected.bind(this),
+            on_row_deselected : this._callback_on_row_deselected.bind(this),
+        });
+
+        this._add_handlers();
+    },
+
+    _request_employees_from_server : function() {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.employee.list,
+            {
+                filter : {
+                    user_id : this.user_id,
+                    org_id : this.org_id
+                },
+                options : {
+                    is_need_users : true
+                }
+            },
+            function(err, response) {
+                if(err) {
+                    new ERLH_W_Message({ message : err.message });
+                } else {
+                    that._on_get_employees_from_server(response);
+                }
+            });
+    },
+
+    _merge_employees_and_users : function(employees, users) {
+        var id_to_user = {};
+        for(var i= 0, user; i<users.length; i++) {
+            user = users[i];
+            id_to_user[user.id] = user;
+        }
+
+        var eus = [];
+
+        for(var i= 0, employee, eu; i<employees.length; i++) {
+            employee = employees[i];
+            eus.push(this._merge_employee_and_user(employee, id_to_user[employee.user_id]));
+        }
+
+        return eus;
+    },
+    _merge_employee_and_user : function(employee, user) {
+        var eu = {};
+
+        var keys = Object.keys(employee);
+
+        for(var i= 0, key; i<keys.length; i++) {
+            key = keys[i];
+            eu[key] = employee[key];
+        }
+
+        keys = Object.keys(user);
+        for(var j=0; j<keys.length; j++) {
+            key = keys[j];
+            if("undefined" === typeof eu[key])
+                eu[key] = user[key];
+        }
+
+        return eu;
+    },
+
+    _add_handlers : function() {
+
+    },
+
+
+    get : function(employee_id) {
+        return this.w_employees_table.get_object_by_id(employee_id);
+    },
+    get_employee : function(employee_id) {
+        return this.employees[employee_id];
+    },
+    get_selected : function() {
+        return this.w_employees_table.get_selected();
+    },
+    get_user_by_user_id : function(user_id) {
+        return this.users[user_id];
+    },
+    get_user_by_employee_id : function(employee_id) {
+        var employee = this.employees[employee_id];
+        if(employee)
+            return this.users[employee.user_id];
+        else
+            return null;
+    },
+
+    add_object : function(employee, user) {
+        if(this.employees[employee.id]) {
+            this.update_object(employee, user)
+        } else {
+            this.employees[employee.id] = employee;
+            this.users[user.id] = user;
+            var eu = this._merge_employee_and_user(employee, user);
+
+            this.w_employees_table.add_row(eu);
+        }
+    },
+    update_object : function(employee, user) {
+        this.employees[employee.id] = employee;
+        this.users[user.id] = user;
+        var eu = this._merge_employee_and_user(employee, user);
+        return this.w_employees_table.update_object(eu);
+    },
+    delete_row : function(id) {
+        this.w_employees_table.delete_row_with_id(id);
+        delete this.employees[id];
+    },
+
+    refresh : function() {
+        this.w_employees_table.delete_all_rows();
+        this._request_employees_from_server();
+    },
+
+    set_user_org_id : function(user_id, org_id) {
+        this.user_id = user_id;
+        this.org_id = org_id;
+        this._request_employees_from_server();
+    },
+
+    set_user_id : function(user_id) {
+        this.user_id = user_id;
+        this._request_employees_from_server();
+    },
+    set_org_id : function(org_id) {
+        this.org_id = org_id;
+        this._request_employees_from_server();
+    },
+    get_org_id : function(org_id) {
+        return this.org_id;
+    },
+
+    _on_get_employees_from_server : function(response) {
+        this.w_employees_table.delete_all_rows();
+
+        this.employees = {};
+        if(response.employees) {
+            for(var i= 0, employee; i<response.employees.length; i++) {
+                employee = response.employees[i];
+                this.employees[employee.id] = employee;
+            }
+        }
+
+        this.users = {};
+        if(response.users) {
+            i = 0;
+            for(var user; i<response.users.length; i++) {
+                user = response.users[i];
+                this.users[user.id] = user;
+            }
+        }
+
+        var employees_users = this._merge_employees_and_users(response.employees, response.users);
+
+        this.w_employees_table.add_rows(employees_users);
+    },
+
+    _callback_add_handlers_for_rows : function(jq_rows) {
+
+    },
+
+    _callback_on_row_selected : function(id, employee) {
+        if(this.options.on_employee_selected)
+            this.options.on_employee_selected(id, employee);
+    },
+    _callback_on_row_deselected : function(id, employee) {
+        if(this.options.on_employee_deselected)
+            this.options.on_employee_deselected(id, employee);
+    },
+
+    _callback_on_click_edit_employee : function(employee) {
+        var w_employee_create_edit = new ERLH_W_Employee_Create_Edit({
+            jq_parent : this.jq_main,
+            employee : this.employees[employee.id],
+            user : this.users[employee.user_id],
+            on_changed : this._callback_on_employee_changed.bind(this),
+            on_deleted : this._callback_on_employee_deleted.bind(this),
+            on_left : this._callback_on_employee_deleted.bind(this),
+        });
+    },
+    _callback_on_employee_changed : function(employee) {
+        this.update_object(employee, this.users[employee.user_id]);
+    },
+    _callback_on_employee_deleted : function(employee) {
+        if(this.options.is_admin_header_set)
+            this.update_object(employee, this.users[employee.user_id]);
+        else
+            this.delete_row(employee.id);
+    },
+};
+/**
+ * Created by erinsasha on 27/04/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.filter
+ * @param options.jq_parent
+ * @param options.is_owner_header_set
+ * @param options.is_admin_header_set
+ * @param options.add_header_filter
+ * @param options.on_employee_selected
+ * @param options.on_employee_deselected
+ * @constructor
+ */
+function ERLH_W_Employees_List_With_Control(options) {
+    options = options ? options : {};
+
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+    this.filter = options.filter ? options.filter : {};
+
+    this._build();
+}
+
+ERLH_W_Employees_List_With_Control.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Employees_List_With_Control">';
+
+        html += '<div class="erlh_buttons_cont erlh_buttons_top_panel">';
+
+        html += '<span class="btn_add_cont"></span>';
+
+        html += '</div>';
+
+        html += '<div class="employee_list_cont"></div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        var jq_btns_cont = this.jq_main.children('.erlh_buttons_cont');
+
+        this.w_btn_add = new ERLH_W_Button({
+            html_class : 'btn_add',
+            jq_parent : jq_btns_cont.children('.btn_add_cont'),
+            text : 'Create',
+            on_click : this._on_click_btn_add.bind(this)
+        });
+
+        this.w_employees_list = new ERLH_W_Employees_List({
+            jq_parent : this.jq_main.children('.employee_list_cont'),
+            is_admin_header_set : this.options.is_admin_header_set,
+            is_owner_header_set : this.options.is_owner_header_set,
+            add_header_filter : this.options.add_header_filter,
+            on_employee_selected : this.options.on_employee_selected,
+            on_employee_deselected : this.options.on_employee_deselected,
+        });
+
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+    },
+
+
+    get : function(employee_id) {
+        this.w_employees_list.get(employee_id);
+    },
+
+
+    add_object : function(employee, user) {
+        this.w_employees_list.add_object(employee, user);
+    },
+    update_object : function(employee, user) {
+        this.w_employees_list.update_object(employee, user);
+    },
+    delete_row : function(id) {
+        this.w_employees_list.delete_row(id);
+    },
+
+
+    refresh : function() {
+        this.w_employees_list.refresh();
+    },
+
+    set_user_org_id : function(user_id, org_id) {
+        this.w_employees_list.set_user_org_id(user_id, org_id);
+    },
+    set_user_id : function(user_id) {
+        this.w_employees_list.set_user_id(user_id);
+    },
+    set_org_id : function(org_id) {
+        this.w_employees_list.set_org_id(org_id);
+    },
+
+    _on_click_btn_add : function() {
+        new ERLH_W_Employee_Create_Edit({
+            org_id : this.w_employees_list.get_org_id(),
+            edit_mode : false,
+            on_created : this._callback_on_employee_created.bind(this)
+        });
+    },
+
+    _callback_on_employee_created : function(employee, user) {
+        this.add_object(employee, user);
+    },
+};
+/**
+ * Created by erinsasha on 13/08/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.order_id
+ * @param options.jq_parent
+ * @constructor
+ */
+function ERLH_W_LH_Connector_Server_Error(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.options = options;
+    this.order_id = options.order_id;
+    this.jq_parent = options.jq_parent;
+
+    this._process();
+}
+
+ERLH_W_LH_Connector_Server_Error.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_LH_Connector_Server_Error">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        html += this._build_HTML_header();
+
+        html += this._build_HTML_instruction_cont();
+        html += '<div class="er_order_details_cont"></div>';
+
+        html += this._build_HTML_buttons_cont();
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_header : function() {
+        if(this.options.dont_add_header)
+            return '';
+        return '<p class="erlh_header">Server Communication Error - need LH Connector</p>';
+    },
+    _build_HTML_instruction_cont : function() {
+        var html = '<div class="erlh_instruction_cont">';
+
+        html += '<p class="er_main_message">Please, install <b><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a></b> extension to fix this problem and then open LinkedIn from a new Chrome tab</p>';
+        html += '<p class="er_lh_link"><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh</a></p>';
+        html += '<p class="er_note_message"><b><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a></b> is our free add-on for Linked Helper</p>';
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_buttons_cont : function() {
+        var html = '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_close_cont"></span>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this._build_buttons_cont();
+    },
+    _build_buttons_cont : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_close = new ERLH_W_Button({
+            html_class : 'btn_close',
+            jq_parent : jq_btns_cont.children('.btn_close_cont'),
+            text : 'Close',
+            on_click : this._on_click_btn_close.bind(this)
+        });
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    _on_click_btn_close : function() {
+        this.remove();
+        if(this.options.on_cancel) {
+            this.options.on_cancel();
+        }
+    },
+    _on_get_order_detail_from_server : function(response) {
+        if(response.orders.length == 0) {
+            new ERLH_W_Message({ message : 'Order with ID='+this.order_id+' not found!' });
+            return;
+        }
+
+        this.order = response.orders[0];
+        this.organisation = response.organisations.length > 0 ? response.organisations[0] : null;
+
+        this.users = {};
+        for(i=0; i<response.users.length; i++) {
+            user = new ERLH_User(response.users[i]);
+            this.users[user.id] = user;
+        }
+
+        this._build();
+    }
+};
+
+ERLH_W_LH_Connector_Server_Error.is_lh_connector_case = function(err) {
+    if(window.location.href.indexOf('linkedin.com') < 0)
+        return false;
+    if(!err)
+        return false;
+
+    return err.response_status === 0;
+};
+
+ERLH_W_LH_Connector_Server_Error.show_error = function(err) {
+    if(ERLH_W_LH_Connector_Server_Error.is_lh_connector_case(err)) {
+        new ERLH_W_LH_Connector_Server_Error({});
+    } else {
+        new ERLH_W_Message({ message : err.message });
+    }
 };
 /**
  * Created by erinsasha on 29/04/17.
@@ -3831,581 +4372,6 @@ ERLH_W_Employee_Create_Edit.prototype = {
 };
 
 /**
- * Created by erinsasha on 22/04/17.
- */
-/**
- *
- * @param options
- * @param options.filter
- * @param options.jq_parent
- * @param options.add_secret_key
- * @param options.lh_admin_header_set
- * @param options.on_install_selected
- * @param options.on_install_deselected
- * @constructor
- */
-function ERLH_W_Installs_List(options) {
-    options = options ? options : {};
-
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-    this.filter = options.filter ? options.filter : {};
-
-    this._build();
-}
-
-ERLH_W_Installs_List.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Installs_List">';
-
-        html += '<div class="installs_cont"></div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        var header = [
-            {id : 'id', name : 'ID'},
-            {id : 'name', name : 'Name', type : ERLH_W_Table.types.input_text},
-            {id : 'dc', name : 'Installed', type : ERLH_W_Table.types.js_milliseconds},
-        ];
-
-        if(this.options.lh_admin_header_set) {
-            header.push({id : 'rv', name : 'rv'});
-            header.push({id : 'user_id', name : 'user_id'});
-            header.push({id : 'secret_key', name : 'Secret key', type : ERLH_W_Table.types.textarea_disabled});
-            header.push({id : 'created', name : 'Created'});
-        } else if (this.options.add_secret_key) {
-            header.push({id : 'secret_key', name : 'Secret key', type : ERLH_W_Table.types.textarea_disabled});
-        }
-
-        this.w_installs_table = new ERLH_W_Table({
-            jq_parent : this.jq_main.children('.installs_cont'),
-            html_class : 'installs_table',
-            header : header,
-            rows : [],
-            add_filters : true,
-            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
-            on_row_selected : this._callback_on_row_selected.bind(this),
-            on_row_deselected : this._callback_on_row_deselected.bind(this),
-            callback_custom_row_class_builder : this._callback_custom_row_class_builder.bind(this)
-        });
-
-        this._add_handlers();
-    },
-
-    _request_installs_from_server : function() {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.install.list, { user_id : this.user_id }, function(err, response) {
-            if(err) {
-                ERLH_W_LH_Connector_Server_Error.show_error(err);
-            } else {
-                that._on_get_installs_from_server(response);
-            }
-        });
-    },
-
-    _add_handlers : function() {
-        this._request_current_install_id();
-
-        window.addEventListener(
-            'EVENT_PUBLIC_KEY_REGISTERED',
-            this._on_EVENT_PUBLIC_KEY_REGISTERED.bind(this),
-            false);
-    },
-
-
-    get : function(install_id) {
-        return this.w_installs_table.get_object_by_id(install_id);
-    },
-    get_selected : function() {
-        return this.w_installs_table.get_selected();
-    },
-
-    update_object : function(install) {
-        return this.w_installs_table.update_object(install);
-    },
-
-    add_install : function(install) {
-        this.w_installs_table.add_row(install);
-    },
-
-    refresh : function() {
-        this._request_current_install_id();
-        this.w_installs_table.delete_all_rows();
-        this._request_installs_from_server();
-    },
-
-    set_user_id : function(user_id) {
-        this.user_id = user_id;
-        this._request_installs_from_server();
-    },
-
-    _update_install : function(install) {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.install.update, { install : install }, function(err, response) {
-            if(err) {
-                new ERLH_W_Message({ message : err.message });
-            } else {
-
-            }
-        });
-    },
-
-    _request_current_install_id : function() {
-        var evtL = document.createEvent("CustomEvent");
-        evtL.initCustomEvent('ER_EVENT_GET_INSTALL_ID', true, true,
-            this._callback_on_get_current_install_id.bind(this));
-        window.dispatchEvent(evtL);
-    },
-
-    _on_get_installs_from_server : function(response) {
-        this.w_installs_table.delete_all_rows();
-        this.w_installs_table.add_rows(response.installs);
-    },
-
-
-    _on_install_name_change : function(event) {
-        var jq_name_inputs = $(event.currentTarget);
-        var val = jq_name_inputs.val();
-        var jq_row = jq_name_inputs.closest('tr');
-        var install_id = Number(jq_row.attr('data-id'));
-
-        var install = this.get(install_id);
-        install.name = val;
-        this._update_install(install);
-    },
-    _on_EVENT_PUBLIC_KEY_REGISTERED : function() {
-        this._request_current_install_id();
-    },
-
-    _callback_add_handlers_for_rows : function(jq_rows) {
-        var jq_name_inputs = jq_rows.find('td[data-prop=name] input');
-        jq_name_inputs.change(this._on_install_name_change.bind(this));
-    },
-    _callback_custom_row_class_builder : function(row, row_number) {
-        if(this.current_install_id && this.current_install_id == row.id)
-            return 'erlh_current_install';
-        else
-            return '';
-    },
-
-    _callback_on_row_selected : function(id, install) {
-        if(this.options.on_install_selected)
-            this.options.on_install_selected(id, install);
-    },
-    _callback_on_row_deselected : function(id, install) {
-        if(this.options.on_install_deselected)
-            this.options.on_install_deselected(id, install);
-    },
-
-    _callback_on_get_current_install_id : function(id) {
-        this.current_install_id = id;
-        this.w_installs_table._get_jq_row_by_id(id).addClass('erlh_current_install');
-    },
-};
-/**
- * Created by erinsasha on 26/04/17.
- */
-
-/**
- *
- * @param options
- * @param options.filter
- * @param options.jq_parent
- * @param options.is_owner_header_set
- * @param options.is_admin_header_set
- * @param options.add_header_filter
- * @param options.on_employee_selected
- * @param options.on_employee_deselected
- * @constructor
- */
-function ERLH_W_Employees_List(options) {
-    options = options ? options : {};
-
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-    this.filter = options.filter ? options.filter : {};
-
-    this.employees = {};
-    this.users = {};
-
-    this._build();
-}
-
-ERLH_W_Employees_List.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Employees_List">';
-
-        html += '<div class="employees_cont"></div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        var header = [
-            {id : 'id', name : 'ID'}
-        ];
-
-        if (this.options.is_admin_header_set) {
-            header.push({id : 'user_id', name : 'User ID'});
-        }
-
-        header.push({id : 'email', name : 'Email'});
-        header.push({id : 'firstname', name : 'First name'});
-        header.push({id : 'lastname', name : 'Last name'});
-        header.push({id : 'role', name : 'Role', type : ERLH_W_Table.types.id_to_name,
-            map : ERLH_Employee.static.get_roles_ids_to_names()
-        });
-
-        if (this.options.is_admin_header_set) {
-            header.push({id : 'status', name : 'Status', type : ERLH_W_Table.types.id_to_name,
-                map : ERLH_Employee.static.get_status_ids_to_names()});
-            header.push({id : 'created_by', name : 'Created By'});
-            header.push({id : 'created', name : 'Created'});
-            header.push({id : 'updated', name : 'Updated'});
-            header.push({id : 'btn_edit', name : 'Edit',
-                type : ERLH_W_Table.types.button, cell_text : 'Edit',
-                onclick : this._callback_on_click_edit_employee.bind(this)
-            });
-        } else if (this.options.is_owner_header_set) {
-            header.push({id : 'btn_edit', name : 'Edit',
-                type : ERLH_W_Table.types.button, cell_text : 'Edit',
-                onclick : this._callback_on_click_edit_employee.bind(this)
-            });
-        }
-
-        this.w_employees_table = new ERLH_W_Table({
-            jq_parent : this.jq_main.children('.employees_cont'),
-            html_class : 'employees_table',
-            header : header,
-            rows : [],
-            add_filters : this.options.add_header_filter,
-            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
-            on_row_selected : this._callback_on_row_selected.bind(this),
-            on_row_deselected : this._callback_on_row_deselected.bind(this),
-        });
-
-        this._add_handlers();
-    },
-
-    _request_employees_from_server : function() {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.employee.list,
-            {
-                filter : {
-                    user_id : this.user_id,
-                    org_id : this.org_id
-                },
-                options : {
-                    is_need_users : true
-                }
-            },
-            function(err, response) {
-                if(err) {
-                    new ERLH_W_Message({ message : err.message });
-                } else {
-                    that._on_get_employees_from_server(response);
-                }
-            });
-    },
-
-    _merge_employees_and_users : function(employees, users) {
-        var id_to_user = {};
-        for(var i= 0, user; i<users.length; i++) {
-            user = users[i];
-            id_to_user[user.id] = user;
-        }
-
-        var eus = [];
-
-        for(var i= 0, employee, eu; i<employees.length; i++) {
-            employee = employees[i];
-            eus.push(this._merge_employee_and_user(employee, id_to_user[employee.user_id]));
-        }
-
-        return eus;
-    },
-    _merge_employee_and_user : function(employee, user) {
-        var eu = {};
-
-        var keys = Object.keys(employee);
-
-        for(var i= 0, key; i<keys.length; i++) {
-            key = keys[i];
-            eu[key] = employee[key];
-        }
-
-        keys = Object.keys(user);
-        for(var j=0; j<keys.length; j++) {
-            key = keys[j];
-            if("undefined" === typeof eu[key])
-                eu[key] = user[key];
-        }
-
-        return eu;
-    },
-
-    _add_handlers : function() {
-
-    },
-
-
-    get : function(employee_id) {
-        return this.w_employees_table.get_object_by_id(employee_id);
-    },
-    get_employee : function(employee_id) {
-        return this.employees[employee_id];
-    },
-    get_selected : function() {
-        return this.w_employees_table.get_selected();
-    },
-    get_user_by_user_id : function(user_id) {
-        return this.users[user_id];
-    },
-    get_user_by_employee_id : function(employee_id) {
-        var employee = this.employees[employee_id];
-        if(employee)
-            return this.users[employee.user_id];
-        else
-            return null;
-    },
-
-    add_object : function(employee, user) {
-        if(this.employees[employee.id]) {
-            this.update_object(employee, user)
-        } else {
-            this.employees[employee.id] = employee;
-            this.users[user.id] = user;
-            var eu = this._merge_employee_and_user(employee, user);
-
-            this.w_employees_table.add_row(eu);
-        }
-    },
-    update_object : function(employee, user) {
-        this.employees[employee.id] = employee;
-        this.users[user.id] = user;
-        var eu = this._merge_employee_and_user(employee, user);
-        return this.w_employees_table.update_object(eu);
-    },
-    delete_row : function(id) {
-        this.w_employees_table.delete_row_with_id(id);
-        delete this.employees[id];
-    },
-
-    refresh : function() {
-        this.w_employees_table.delete_all_rows();
-        this._request_employees_from_server();
-    },
-
-    set_user_org_id : function(user_id, org_id) {
-        this.user_id = user_id;
-        this.org_id = org_id;
-        this._request_employees_from_server();
-    },
-
-    set_user_id : function(user_id) {
-        this.user_id = user_id;
-        this._request_employees_from_server();
-    },
-    set_org_id : function(org_id) {
-        this.org_id = org_id;
-        this._request_employees_from_server();
-    },
-    get_org_id : function(org_id) {
-        return this.org_id;
-    },
-
-    _on_get_employees_from_server : function(response) {
-        this.w_employees_table.delete_all_rows();
-
-        this.employees = {};
-        if(response.employees) {
-            for(var i= 0, employee; i<response.employees.length; i++) {
-                employee = response.employees[i];
-                this.employees[employee.id] = employee;
-            }
-        }
-
-        this.users = {};
-        if(response.users) {
-            i = 0;
-            for(var user; i<response.users.length; i++) {
-                user = response.users[i];
-                this.users[user.id] = user;
-            }
-        }
-
-        var employees_users = this._merge_employees_and_users(response.employees, response.users);
-
-        this.w_employees_table.add_rows(employees_users);
-    },
-
-    _callback_add_handlers_for_rows : function(jq_rows) {
-
-    },
-
-    _callback_on_row_selected : function(id, employee) {
-        if(this.options.on_employee_selected)
-            this.options.on_employee_selected(id, employee);
-    },
-    _callback_on_row_deselected : function(id, employee) {
-        if(this.options.on_employee_deselected)
-            this.options.on_employee_deselected(id, employee);
-    },
-
-    _callback_on_click_edit_employee : function(employee) {
-        var w_employee_create_edit = new ERLH_W_Employee_Create_Edit({
-            jq_parent : this.jq_main,
-            employee : this.employees[employee.id],
-            user : this.users[employee.user_id],
-            on_changed : this._callback_on_employee_changed.bind(this),
-            on_deleted : this._callback_on_employee_deleted.bind(this),
-            on_left : this._callback_on_employee_deleted.bind(this),
-        });
-    },
-    _callback_on_employee_changed : function(employee) {
-        this.update_object(employee, this.users[employee.user_id]);
-    },
-    _callback_on_employee_deleted : function(employee) {
-        if(this.options.is_admin_header_set)
-            this.update_object(employee, this.users[employee.user_id]);
-        else
-            this.delete_row(employee.id);
-    },
-};
-/**
- * Created by erinsasha on 27/04/17.
- */
-
-/**
- *
- * @param options
- * @param options.filter
- * @param options.jq_parent
- * @param options.is_owner_header_set
- * @param options.is_admin_header_set
- * @param options.add_header_filter
- * @param options.on_employee_selected
- * @param options.on_employee_deselected
- * @constructor
- */
-function ERLH_W_Employees_List_With_Control(options) {
-    options = options ? options : {};
-
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-    this.filter = options.filter ? options.filter : {};
-
-    this._build();
-}
-
-ERLH_W_Employees_List_With_Control.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Employees_List_With_Control">';
-
-        html += '<div class="erlh_buttons_cont erlh_buttons_top_panel">';
-
-        html += '<span class="btn_add_cont"></span>';
-
-        html += '</div>';
-
-        html += '<div class="employee_list_cont"></div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        var jq_btns_cont = this.jq_main.children('.erlh_buttons_cont');
-
-        this.w_btn_add = new ERLH_W_Button({
-            html_class : 'btn_add',
-            jq_parent : jq_btns_cont.children('.btn_add_cont'),
-            text : 'Create',
-            on_click : this._on_click_btn_add.bind(this)
-        });
-
-        this.w_employees_list = new ERLH_W_Employees_List({
-            jq_parent : this.jq_main.children('.employee_list_cont'),
-            is_admin_header_set : this.options.is_admin_header_set,
-            is_owner_header_set : this.options.is_owner_header_set,
-            add_header_filter : this.options.add_header_filter,
-            on_employee_selected : this.options.on_employee_selected,
-            on_employee_deselected : this.options.on_employee_deselected,
-        });
-
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-    },
-
-
-    get : function(employee_id) {
-        this.w_employees_list.get(employee_id);
-    },
-
-
-    add_object : function(employee, user) {
-        this.w_employees_list.add_object(employee, user);
-    },
-    update_object : function(employee, user) {
-        this.w_employees_list.update_object(employee, user);
-    },
-    delete_row : function(id) {
-        this.w_employees_list.delete_row(id);
-    },
-
-
-    refresh : function() {
-        this.w_employees_list.refresh();
-    },
-
-    set_user_org_id : function(user_id, org_id) {
-        this.w_employees_list.set_user_org_id(user_id, org_id);
-    },
-    set_user_id : function(user_id) {
-        this.w_employees_list.set_user_id(user_id);
-    },
-    set_org_id : function(org_id) {
-        this.w_employees_list.set_org_id(org_id);
-    },
-
-    _on_click_btn_add : function() {
-        new ERLH_W_Employee_Create_Edit({
-            org_id : this.w_employees_list.get_org_id(),
-            edit_mode : false,
-            on_created : this._callback_on_employee_created.bind(this)
-        });
-    },
-
-    _callback_on_employee_created : function(employee, user) {
-        this.add_object(employee, user);
-    },
-};
-/**
  * Created by erinsasha on 18/05/17.
  */
 
@@ -4529,6 +4495,239 @@ ERLH_W_License_Attach_Install.prototype = {
         this.user_id = employee.user_id;
         this._show_choose_install();
     }
+};
+/**
+ * Created by erinsasha on 19/05/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.license
+ * @param options.on_cancel
+ * @param options.on_detached
+ * @constructor
+ */
+function ERLH_W_License_Detach_Install(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+    this.license = options.license;
+
+    this._process();
+}
+
+ERLH_W_License_Detach_Install.prototype = {
+    _process : function() {
+        if(!this.license.install_id) {
+            new ERLH_W_Message({ message : 'License is not attached to any installations' });
+            if(this.options.on_cancel)
+                this.options.on_cancel();
+
+            return;
+        }
+
+        var message = 'Do you want to detach license from the installation with ID='+this.license.install_id;
+        if(this.license.install_name) {
+            message += ' name="'+this.license.install_name+'"';
+        }
+        message += ' ?';
+
+        var w_Dialog_Yes_No = new ERLH_W_Dialog_Yes_No({
+            jq_parent : this.jq_parent,
+            message : message,
+            on_yes : this._detach_install.bind(this),
+            on_no : this._on_cancel.bind(this)
+        })
+    },
+    _detach_install : function() {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.license.detachinstall, {license_id : this.license.id}, function(err, response) {
+            if(err) {
+                new ERLH_W_Message({ message : err.message });
+            } else {
+                if(that.options.on_detached)
+                    that.options.on_detached(response.license);
+            }
+        });
+    },
+
+    _on_cancel : function() {
+        if(this.options.on_cancel)
+            this.options.on_cancel();
+    },
+
+};
+/**
+ * Created by erinsasha on 30/04/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.filter
+ * @param options.jq_parent
+ * @param options.is_owner_header_set
+ * @param options.is_admin_header_set
+ * @param options.add_header_filter
+ * @param options.on_license_key_selected
+ * @param options.on_license_key_deselected
+ * @constructor
+ */
+function ERLH_W_License_Keys_List(options) {
+    options = options ? options : {};
+
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+    this.filter = options.filter ? options.filter : {};
+
+    this.license_keys = {};
+    this.users = {};
+
+    this._build();
+}
+
+ERLH_W_License_Keys_List.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_License_Keys_List">';
+
+        html += '<div class="license_keys_cont"></div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        var header = [
+            {id : 'id', name : 'ID'}
+        ];
+
+        if (this.options.is_admin_header_set) {
+            header.push({id : 'status', name : 'Status', type : ERLH_W_Table.types.id_to_name,
+                map : ERLH_License_Key.static.get_status_ids_to_names()});
+            header.push({id : 'source', name : 'Source', type : ERLH_W_Table.types.id_to_name,
+                map : ERLH_License_Key.static.get_source_ids_to_names()});
+            header.push({id : 'install_id', name : 'Install'});
+            header.push({id : 'dc', name : 'dc'});
+            header.push({id : 'dc_sql', name : 'dc_sql'});
+            header.push({id : 'rv', name : 'rv'});
+            header.push({id : 'gdc', name : 'gdc'});
+            header.push({id : 'gdc_sql', name : 'gdc_sql'});
+            header.push({id : 'udc', name : 'udc'});
+            header.push({id : 'udc', name : 'udc', type : ERLH_W_Table.types.js_milliseconds});
+            header.push({id : 't', name : 'Type'});
+
+            header.push({id : 'created_by', name : 'Created By'});
+            header.push({id : 'created', name : 'Created'});
+            header.push({id : 'updated', name : 'Updated'});
+            header.push({id : 'btn_edit', name : 'Edit',
+                type : ERLH_W_Table.types.button, cell_text : 'Edit',
+                onclick : this._callback_on_click_edit_license_key.bind(this)
+            });
+            header.push({id : 'key', name : 'Key'});
+        } else if (this.options.is_owner_header_set) {
+
+        }
+
+        this.w_license_keys_table = new ERLH_W_Table({
+            jq_parent : this.jq_main.children('.license_keys_cont'),
+            html_class : 'license_keys_table',
+            header : header,
+            rows : [],
+            add_filters : this.options.add_header_filter,
+            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
+            on_row_selected : this._callback_on_row_selected.bind(this),
+            on_row_deselected : this._callback_on_row_deselected.bind(this),
+        });
+
+        this._add_handlers();
+    },
+
+    _request_license_keys_from_server : function() {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.license_key.list,
+            {
+                filter : {
+                    user_id : this.user_id,
+                },
+                options : {}
+            },
+            function(err, response) {
+                if(err) {
+                    new ERLH_W_Message({ message : err.message });
+                } else {
+                    that._on_get_license_keys_from_server(response);
+                }
+            });
+    },
+
+    _add_handlers : function() {
+
+    },
+
+
+    get : function(license_key_id) {
+        return this.w_license_keys_table.get_object_by_id(license_key_id);
+    },
+
+    add_object : function(license_key) {
+        this.w_license_keys_table.add_row(license_key);
+    },
+    update_object : function(license_key) {
+        return this.w_license_keys_table.update_object(license_key);
+    },
+    delete_row : function(id) {
+        this.w_license_keys_table.delete_row_with_id(id);
+    },
+
+    refresh : function() {
+        this.w_license_keys_table.delete_all_rows();
+        this._request_license_keys_from_server();
+    },
+
+    set_user_id : function(user_id) {
+        this.user_id = user_id;
+        this._request_license_keys_from_server();
+    },
+
+    _on_get_license_keys_from_server : function(response) {
+        this.w_license_keys_table.delete_all_rows();
+        this.w_license_keys_table.add_rows(response.keys);
+    },
+
+    _callback_add_handlers_for_rows : function(jq_rows) {
+
+    },
+
+    _callback_on_row_selected : function(id, license_key) {
+        if(this.options.on_license_key_selected)
+            this.options.on_license_key_selected(id, license_key);
+    },
+    _callback_on_row_deselected : function(id, license_key) {
+        if(this.options.on_license_key_deselected)
+            this.options.on_license_key_deselected(id, license_key);
+    },
+
+    _callback_on_click_edit_license_key : function(license_key) {
+
+    },
+    _callback_on_license_key_changed : function(license_key) {
+        this.update_object(license_key);
+    },
+    _callback_on_license_key_deleted : function(license_key) {
+        if(this.options.is_admin_header_set)
+            this.update_object(license_key);
+        else
+            this.delete_row(license_key.id);
+    },
 };
 /**
  * Created by erinsasha on 03/05/17.
@@ -5217,387 +5416,6 @@ ERLH_W_License_Create_Edit.prototype = {
     },
 };
 
-/**
- * Created by erinsasha on 13/08/17.
- */
-
-/**
- *
- * @param options
- * @param options.order_id
- * @param options.jq_parent
- * @constructor
- */
-function ERLH_W_LH_Connector_Server_Error(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.options = options;
-    this.order_id = options.order_id;
-    this.jq_parent = options.jq_parent;
-
-    this._process();
-}
-
-ERLH_W_LH_Connector_Server_Error.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_LH_Connector_Server_Error">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        html += this._build_HTML_header();
-
-        html += this._build_HTML_instruction_cont();
-        html += '<div class="er_order_details_cont"></div>';
-
-        html += this._build_HTML_buttons_cont();
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_header : function() {
-        if(this.options.dont_add_header)
-            return '';
-        return '<p class="erlh_header">Server Communication Error - need LH Connector</p>';
-    },
-    _build_HTML_instruction_cont : function() {
-        var html = '<div class="erlh_instruction_cont">';
-
-        html += '<p class="er_main_message">Please, install <b><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a></b> extension to fix this problem and then open LinkedIn from a new Chrome tab</p>';
-        html += '<p class="er_lh_link"><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh</a></p>';
-        html += '<p class="er_note_message"><b><a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a></b> is our free add-on for Linked Helper</p>';
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_buttons_cont : function() {
-        var html = '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_close_cont"></span>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this._build_buttons_cont();
-    },
-    _build_buttons_cont : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_close = new ERLH_W_Button({
-            html_class : 'btn_close',
-            jq_parent : jq_btns_cont.children('.btn_close_cont'),
-            text : 'Close',
-            on_click : this._on_click_btn_close.bind(this)
-        });
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    _on_click_btn_close : function() {
-        this.remove();
-        if(this.options.on_cancel) {
-            this.options.on_cancel();
-        }
-    },
-    _on_get_order_detail_from_server : function(response) {
-        if(response.orders.length == 0) {
-            new ERLH_W_Message({ message : 'Order with ID='+this.order_id+' not found!' });
-            return;
-        }
-
-        this.order = response.orders[0];
-        this.organisation = response.organisations.length > 0 ? response.organisations[0] : null;
-
-        this.users = {};
-        for(i=0; i<response.users.length; i++) {
-            user = new ERLH_User(response.users[i]);
-            this.users[user.id] = user;
-        }
-
-        this._build();
-    }
-};
-
-ERLH_W_LH_Connector_Server_Error.is_lh_connector_case = function(err) {
-    if(window.location.href.indexOf('linkedin.com') < 0)
-        return false;
-    if(!err)
-        return false;
-
-    return err.response_status === 0;
-};
-
-ERLH_W_LH_Connector_Server_Error.show_error = function(err) {
-    if(ERLH_W_LH_Connector_Server_Error.is_lh_connector_case(err)) {
-        new ERLH_W_LH_Connector_Server_Error({});
-    } else {
-        new ERLH_W_Message({ message : err.message });
-    }
-};
-/**
- * Created by erinsasha on 19/05/17.
- */
-
-/**
- *
- * @param options
- * @param options.license
- * @param options.on_cancel
- * @param options.on_detached
- * @constructor
- */
-function ERLH_W_License_Detach_Install(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-    this.license = options.license;
-
-    this._process();
-}
-
-ERLH_W_License_Detach_Install.prototype = {
-    _process : function() {
-        if(!this.license.install_id) {
-            new ERLH_W_Message({ message : 'License is not attached to any installations' });
-            if(this.options.on_cancel)
-                this.options.on_cancel();
-
-            return;
-        }
-
-        var message = 'Do you want to detach license from the installation with ID='+this.license.install_id;
-        if(this.license.install_name) {
-            message += ' name="'+this.license.install_name+'"';
-        }
-        message += ' ?';
-
-        var w_Dialog_Yes_No = new ERLH_W_Dialog_Yes_No({
-            jq_parent : this.jq_parent,
-            message : message,
-            on_yes : this._detach_install.bind(this),
-            on_no : this._on_cancel.bind(this)
-        })
-    },
-    _detach_install : function() {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.license.detachinstall, {license_id : this.license.id}, function(err, response) {
-            if(err) {
-                new ERLH_W_Message({ message : err.message });
-            } else {
-                if(that.options.on_detached)
-                    that.options.on_detached(response.license);
-            }
-        });
-    },
-
-    _on_cancel : function() {
-        if(this.options.on_cancel)
-            this.options.on_cancel();
-    },
-
-};
-/**
- * Created by erinsasha on 30/04/17.
- */
-
-/**
- *
- * @param options
- * @param options.filter
- * @param options.jq_parent
- * @param options.is_owner_header_set
- * @param options.is_admin_header_set
- * @param options.add_header_filter
- * @param options.on_license_key_selected
- * @param options.on_license_key_deselected
- * @constructor
- */
-function ERLH_W_License_Keys_List(options) {
-    options = options ? options : {};
-
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-    this.filter = options.filter ? options.filter : {};
-
-    this.license_keys = {};
-    this.users = {};
-
-    this._build();
-}
-
-ERLH_W_License_Keys_List.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_License_Keys_List">';
-
-        html += '<div class="license_keys_cont"></div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        var header = [
-            {id : 'id', name : 'ID'}
-        ];
-
-        if (this.options.is_admin_header_set) {
-            header.push({id : 'status', name : 'Status', type : ERLH_W_Table.types.id_to_name,
-                map : ERLH_License_Key.static.get_status_ids_to_names()});
-            header.push({id : 'source', name : 'Source', type : ERLH_W_Table.types.id_to_name,
-                map : ERLH_License_Key.static.get_source_ids_to_names()});
-            header.push({id : 'install_id', name : 'Install'});
-            header.push({id : 'dc', name : 'dc'});
-            header.push({id : 'dc_sql', name : 'dc_sql'});
-            header.push({id : 'rv', name : 'rv'});
-            header.push({id : 'gdc', name : 'gdc'});
-            header.push({id : 'gdc_sql', name : 'gdc_sql'});
-            header.push({id : 'udc', name : 'udc'});
-            header.push({id : 'udc', name : 'udc', type : ERLH_W_Table.types.js_milliseconds});
-            header.push({id : 't', name : 'Type'});
-
-            header.push({id : 'created_by', name : 'Created By'});
-            header.push({id : 'created', name : 'Created'});
-            header.push({id : 'updated', name : 'Updated'});
-            header.push({id : 'btn_edit', name : 'Edit',
-                type : ERLH_W_Table.types.button, cell_text : 'Edit',
-                onclick : this._callback_on_click_edit_license_key.bind(this)
-            });
-            header.push({id : 'key', name : 'Key'});
-        } else if (this.options.is_owner_header_set) {
-
-        }
-
-        this.w_license_keys_table = new ERLH_W_Table({
-            jq_parent : this.jq_main.children('.license_keys_cont'),
-            html_class : 'license_keys_table',
-            header : header,
-            rows : [],
-            add_filters : this.options.add_header_filter,
-            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
-            on_row_selected : this._callback_on_row_selected.bind(this),
-            on_row_deselected : this._callback_on_row_deselected.bind(this),
-        });
-
-        this._add_handlers();
-    },
-
-    _request_license_keys_from_server : function() {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.license_key.list,
-            {
-                filter : {
-                    user_id : this.user_id,
-                },
-                options : {}
-            },
-            function(err, response) {
-                if(err) {
-                    new ERLH_W_Message({ message : err.message });
-                } else {
-                    that._on_get_license_keys_from_server(response);
-                }
-            });
-    },
-
-    _add_handlers : function() {
-
-    },
-
-
-    get : function(license_key_id) {
-        return this.w_license_keys_table.get_object_by_id(license_key_id);
-    },
-
-    add_object : function(license_key) {
-        this.w_license_keys_table.add_row(license_key);
-    },
-    update_object : function(license_key) {
-        return this.w_license_keys_table.update_object(license_key);
-    },
-    delete_row : function(id) {
-        this.w_license_keys_table.delete_row_with_id(id);
-    },
-
-    refresh : function() {
-        this.w_license_keys_table.delete_all_rows();
-        this._request_license_keys_from_server();
-    },
-
-    set_user_id : function(user_id) {
-        this.user_id = user_id;
-        this._request_license_keys_from_server();
-    },
-
-    _on_get_license_keys_from_server : function(response) {
-        this.w_license_keys_table.delete_all_rows();
-        this.w_license_keys_table.add_rows(response.keys);
-    },
-
-    _callback_add_handlers_for_rows : function(jq_rows) {
-
-    },
-
-    _callback_on_row_selected : function(id, license_key) {
-        if(this.options.on_license_key_selected)
-            this.options.on_license_key_selected(id, license_key);
-    },
-    _callback_on_row_deselected : function(id, license_key) {
-        if(this.options.on_license_key_deselected)
-            this.options.on_license_key_deselected(id, license_key);
-    },
-
-    _callback_on_click_edit_license_key : function(license_key) {
-
-    },
-    _callback_on_license_key_changed : function(license_key) {
-        this.update_object(license_key);
-    },
-    _callback_on_license_key_deleted : function(license_key) {
-        if(this.options.is_admin_header_set)
-            this.update_object(license_key);
-        else
-            this.delete_row(license_key.id);
-    },
-};
 /**
  * Created by erinsasha on 01/05/17.
  */
@@ -6417,6 +6235,188 @@ ERLH_W_Main.prototype = {
     }
 };
 /**
+ * Created by erinsasha on 22/04/17.
+ */
+/**
+ *
+ * @param options
+ * @param options.filter
+ * @param options.jq_parent
+ * @param options.add_secret_key
+ * @param options.lh_admin_header_set
+ * @param options.on_install_selected
+ * @param options.on_install_deselected
+ * @constructor
+ */
+function ERLH_W_Installs_List(options) {
+    options = options ? options : {};
+
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+    this.filter = options.filter ? options.filter : {};
+
+    this._build();
+}
+
+ERLH_W_Installs_List.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Installs_List">';
+
+        html += '<div class="installs_cont"></div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        var header = [
+            {id : 'id', name : 'ID'},
+            {id : 'name', name : 'Name', type : ERLH_W_Table.types.input_text},
+            {id : 'dc', name : 'Installed', type : ERLH_W_Table.types.js_milliseconds},
+        ];
+
+        if(this.options.lh_admin_header_set) {
+            header.push({id : 'rv', name : 'rv'});
+            header.push({id : 'user_id', name : 'user_id'});
+            header.push({id : 'secret_key', name : 'Secret key', type : ERLH_W_Table.types.textarea_disabled});
+            header.push({id : 'created', name : 'Created'});
+        } else if (this.options.add_secret_key) {
+            header.push({id : 'secret_key', name : 'Secret key', type : ERLH_W_Table.types.textarea_disabled});
+        }
+
+        this.w_installs_table = new ERLH_W_Table({
+            jq_parent : this.jq_main.children('.installs_cont'),
+            html_class : 'installs_table',
+            header : header,
+            rows : [],
+            add_filters : true,
+            add_handlers_for_rows : this._callback_add_handlers_for_rows.bind(this),
+            on_row_selected : this._callback_on_row_selected.bind(this),
+            on_row_deselected : this._callback_on_row_deselected.bind(this),
+            callback_custom_row_class_builder : this._callback_custom_row_class_builder.bind(this)
+        });
+
+        this._add_handlers();
+    },
+
+    _request_installs_from_server : function() {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.install.list, { user_id : this.user_id }, function(err, response) {
+            if(err) {
+                ERLH_W_LH_Connector_Server_Error.show_error(err);
+            } else {
+                that._on_get_installs_from_server(response);
+            }
+        });
+    },
+
+    _add_handlers : function() {
+        this._request_current_install_id();
+
+        window.addEventListener(
+            'EVENT_PUBLIC_KEY_REGISTERED',
+            this._on_EVENT_PUBLIC_KEY_REGISTERED.bind(this),
+            false);
+    },
+
+
+    get : function(install_id) {
+        return this.w_installs_table.get_object_by_id(install_id);
+    },
+    get_selected : function() {
+        return this.w_installs_table.get_selected();
+    },
+
+    update_object : function(install) {
+        return this.w_installs_table.update_object(install);
+    },
+
+    add_install : function(install) {
+        this.w_installs_table.add_row(install);
+    },
+
+    refresh : function() {
+        this._request_current_install_id();
+        this.w_installs_table.delete_all_rows();
+        this._request_installs_from_server();
+    },
+
+    set_user_id : function(user_id) {
+        this.user_id = user_id;
+        this._request_installs_from_server();
+    },
+
+    _update_install : function(install) {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.install.update, { install : install }, function(err, response) {
+            if(err) {
+                new ERLH_W_Message({ message : err.message });
+            } else {
+
+            }
+        });
+    },
+
+    _request_current_install_id : function() {
+        var evtL = document.createEvent("CustomEvent");
+        evtL.initCustomEvent('ER_EVENT_GET_INSTALL_ID', true, true,
+            this._callback_on_get_current_install_id.bind(this));
+        window.dispatchEvent(evtL);
+    },
+
+    _on_get_installs_from_server : function(response) {
+        this.w_installs_table.delete_all_rows();
+        this.w_installs_table.add_rows(response.installs);
+    },
+
+
+    _on_install_name_change : function(event) {
+        var jq_name_inputs = $(event.currentTarget);
+        var val = jq_name_inputs.val();
+        var jq_row = jq_name_inputs.closest('tr');
+        var install_id = Number(jq_row.attr('data-id'));
+
+        var install = this.get(install_id);
+        install.name = val;
+        this._update_install(install);
+    },
+    _on_EVENT_PUBLIC_KEY_REGISTERED : function() {
+        this._request_current_install_id();
+    },
+
+    _callback_add_handlers_for_rows : function(jq_rows) {
+        var jq_name_inputs = jq_rows.find('td[data-prop=name] input');
+        jq_name_inputs.change(this._on_install_name_change.bind(this));
+    },
+    _callback_custom_row_class_builder : function(row, row_number) {
+        if(this.current_install_id && this.current_install_id == row.id)
+            return 'erlh_current_install';
+        else
+            return '';
+    },
+
+    _callback_on_row_selected : function(id, install) {
+        if(this.options.on_install_selected)
+            this.options.on_install_selected(id, install);
+    },
+    _callback_on_row_deselected : function(id, install) {
+        if(this.options.on_install_deselected)
+            this.options.on_install_deselected(id, install);
+    },
+
+    _callback_on_get_current_install_id : function(id) {
+        this.current_install_id = id;
+        this.w_installs_table._get_jq_row_by_id(id).addClass('erlh_current_install');
+    },
+};
+/**
  * Created by erinsasha on 20/04/17.
  */
 /**
@@ -6852,6 +6852,179 @@ ERLH_W_My_Licenses.prototype = {
     },
 };
 /**
+ * Created by erinsasha on 26/07/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.order_id
+ * @param options.jq_parent
+ * @constructor
+ */
+function ERLH_W_Order_Completed_Popup(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.options = options;
+    this.order_id = options.order_id;
+    this.jq_parent = options.jq_parent;
+
+    this._process();
+}
+
+ERLH_W_Order_Completed_Popup.prototype = {
+    _process : function() {
+        this._request_order_details();
+    },
+    _request_order_details : function() {
+        var that = this;
+
+        erlh_server.send(erlh_server.url.order.list,
+            {
+                filter : {
+                    id : this.order_id
+                },
+                add_users : true,
+                add_organisations : true,
+            },
+            function(err, response) {
+                if(err) {
+                    new ERLH_W_Message({ message : err.message });
+                } else {
+                    that._on_get_order_detail_from_server(response);
+                }
+            });
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Order_Completed_Popup">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        html += this._build_HTML_header();
+
+        html += this._build_instruction_cont();
+        html += '<div class="er_order_details_cont"></div>';
+
+        html += this._build_HTML_buttons_cont();
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_header : function() {
+        if(this.options.dont_add_header)
+            return '';
+
+        var header_default = 'You\'ve got new license!';
+        /*
+            + this.order.user_email
+            +' for order #'+this.order.id
+            +' months : '+this.order.months
+            +' quantity : '+this.order.quantity
+            +' Total cost : '+this.order.total_cost;*/
+
+        return '<p class="erlh_header">'+header_default+'</p>';
+    },
+    _build_HTML_buttons_cont : function() {
+        var html = '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_close_cont"></span>';
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_instruction_cont : function() {
+        var html = '<div class="erlh_instruction_cont">';
+
+        html += '<p><b><a target="_blank" href="https://www.youtube.com/watch?v=X_rwdD0kcj8&feature=youtu.be&hd=1">To activate your license, please:</a></b></p>';
+
+        html += '<ul style="list-style-type: none; padding-left: 1em;">';
+        html += '<li>1) Install <a href="https://chrome.google.com/webstore/detail/linked-helper-automate-wo/ggmfnfhhfapdhpbhpfhllhdlimdghmaa">Linked Helper</a> in your Chrome</li>';
+        html += '<li>2) Install <a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a> - our free add-on for Linked Helper</li>';
+        html += '<li>3) Open <a href="https://linkedin.com">https://LinkedIn.com</a></li>';
+        html += '<li>4) Go to "My Account" in Linked Helper widget at the right bottom of LinkedIn page</li>';
+        html += '<li>5) Login with '+erlh_curr_user.user.email+'</li>';
+        html += '<li><i>Just reload LinkedIn page, if you already did this before</i></li>';
+
+        html += '</ul>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        new ERLH_W_Order_Details({
+            order : this.order,
+            organisation : this.organisation,
+            jq_parent : this.jq_main_content.children('.er_order_details_cont')
+        });
+
+        this._build_buttons_cont();
+    },
+    _build_buttons_cont : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_close = new ERLH_W_Button({
+            html_class : 'btn_close',
+            jq_parent : jq_btns_cont.children('.btn_close_cont'),
+            text : 'Close',
+            on_click : this._on_click_btn_close.bind(this)
+        });
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    _on_click_btn_close : function() {
+        this.remove();
+        if(this.options.on_cancel) {
+            this.options.on_cancel();
+        }
+    },
+    _on_get_order_detail_from_server : function(response) {
+        if(response.orders.length == 0) {
+            new ERLH_W_Message({ message : 'Order with ID='+this.order_id+' not found!' });
+            return;
+        }
+
+        this.order = response.orders[0];
+        this.organisation = response.organisations.length > 0 ? response.organisations[0] : null;
+
+        this.users = {};
+        for(i=0; i<response.users.length; i++) {
+            user = new ERLH_User(response.users[i]);
+            this.users[user.id] = user;
+        }
+
+        this._build();
+    }
+};
+/**
  * Created by erinsasha on 16/05/17.
  */
 /**
@@ -6910,6 +7083,84 @@ ERLH_W_My_Installations.prototype = {
     },
     on_hide : function() {
 
+    },
+};
+/**
+ * Created by erinsasha on 26/07/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.order
+ * @param options.organisation
+ * @param options.jq_parent
+ * @param options.header
+ * @param options.dont_add_header
+ * @constructor
+ */
+function ERLH_W_Order_Details(options) {
+    options = options ? options : {};
+    this.options = options;
+    this.order = options.order;
+    this.organisation = options.organisation;
+    this.jq_parent = options.jq_parent;
+
+    this._build();
+}
+
+ERLH_W_Order_Details.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Order_Details">';
+        html += this._build_HTML_header();
+        html += this._build_order_table();
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_header : function() {
+        if(this.options.dont_add_header)
+            return '';
+
+        var header = this.options.header ? this.options.header : 'Order details:';
+
+        return '<p class="erlh_header">'+header+'</p>';
+    },
+
+    _build_order_table : function(order, options, customer_data) {
+        var html = '<table class="erlh_order_details_table"><tbody>';
+
+        var order = this.order;
+
+        if(order.org_id)
+            html += this._build_order_table_raw('Organisation', customer_data.organisation.name);
+
+        html += this._build_order_table_raw('Months', order.months);
+        html += this._build_order_table_raw('Quantity', order.quantity);
+
+        if(order.discount && order.discount > 0)
+            html += this._build_order_table_raw('Discount', order.discount);
+
+        html += this._build_order_table_raw('Total cost', order.total_cost + ' USD');
+        html += this._build_order_table_raw('Pay with', ERLH_Order.static.method_id_to_name[order.method]);
+
+        html += '</tbody></table>';
+
+        return html;
+    },
+
+    _build_order_table_raw : function(label, value) {
+        return '<tr><td class="erlh_t_label">'+label+'</td><td class="erlh_t_value">'+value+'</td></tr>';
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+    },
+    remove : function() {
+        this.jq_main.remove();
     },
 };
 /**
@@ -7004,11 +7255,6 @@ ERLH_W_My_Organisations.prototype = {
         this.w_organisations_list_with_control.update_object(organisation);
     },
 };
-/**
- * Created by erinsasha on 03/06/17.
- */
-
-
 /**
  * Created by erinsasha on 01/06/17.
  */
@@ -7469,6 +7715,300 @@ ERLH_W_Orders_List_With_Control.prototype = {
     },
 };
 /**
+ * Created by erinsasha on 20/06/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.order
+ * @param options.jq_parent
+ * @param options.on_sent
+ * @param options.on_cancel
+ * @constructor
+ */
+function ERLH_W_Order_Send_Manual_Invoice(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.options = options;
+    this.order = options.order;
+    this.jq_parent = options.jq_parent;
+
+    this._build();
+}
+
+ERLH_W_Order_Send_Manual_Invoice.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Order_Send_Manual_Invoice">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        html += this._build_HTML_header();
+
+        html += '<div class="invoice_url_cont"></div>';
+
+        html += this._build_HTML_buttons_cont();
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_header : function() {
+        if(this.options.dont_add_header)
+            return '';
+
+        var header_default = 'Send invoice to '
+            + this.order.user_email
+            +' for order #'+this.order.id
+            +' months : '+this.order.months
+            +' quantity : '+this.order.quantity
+            +' Total cost : '+this.order.total_cost;
+
+        return '<p class="erlh_header">'+header_default+'</p>';
+    },
+    _build_HTML_buttons_cont : function() {
+        var html = '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_cancel_cont"></span>';
+        html += '<span class="btn_ok_cont"></span>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this.w_invoice_url = new ERLH_W_Input({
+            html_class : 'invoice_url_field',
+            jq_parent : this.jq_main_content.children('.invoice_url_cont'),
+            input_attrs : {
+                placeholder : 'Invoice URL',
+                type : 'text'
+            },
+        });
+
+        this._build_buttons_cont();
+    },
+    _build_buttons_cont : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_cancel = new ERLH_W_Button({
+            html_class : 'btn_cancel',
+            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
+            text : 'Cancel',
+            on_click : this._on_click_btn_cancel.bind(this)
+        });
+
+        this.w_btn_ok = new ERLH_W_Button({
+            html_class : 'btn_ok',
+            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
+            text : 'Ok',
+            on_click : this._on_click_btn_ok.bind(this)
+        });
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    _on_click_btn_ok : function() {
+        var invoice_url = this.w_invoice_url.get();
+        if(!invoice_url || invoice_url == '')
+            return;
+
+        invoice_url.trim();
+        ERLH_Order.server.sendinvoice(this.order.id, invoice_url, {}, this._on_server_callback.bind(this));
+    },
+    _on_server_callback : function(err, response) {
+        if (err) {
+            new ERLH_W_Message({ message : err.message });
+            return;
+        }
+
+        new ERLH_W_Message({ message : 'Invoice sent' });
+
+        this.remove();
+        this.order.invoice_url = this.w_invoice_url.get().trim();
+        if(this.options.on_sent) {
+            this.options.on_sent(this.order);
+        }
+    },
+    _on_click_btn_cancel : function() {
+        this.remove();
+        if(this.options.on_cancel) {
+            this.options.on_cancel();
+        }
+    },
+};
+/**
+ * Created by erinsasha on 20/06/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.order
+ * @param options.jq_parent
+ * @param options.on_sent
+ * @param options.on_cancel
+ * @constructor
+ */
+function ERLH_W_Order_Send_Manual_Invoice(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.options = options;
+    this.order = options.order;
+    this.jq_parent = options.jq_parent;
+
+    this._build();
+}
+
+ERLH_W_Order_Send_Manual_Invoice.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Order_Send_Manual_Invoice">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        html += this._build_HTML_header();
+
+        html += '<div class="invoice_url_cont"></div>';
+
+        html += this._build_HTML_buttons_cont();
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_header : function() {
+        if(this.options.dont_add_header)
+            return '';
+
+        var header_default = 'Send invoice to '
+            + this.order.user_email
+            +' for order #'+this.order.id
+            +' months : '+this.order.months
+            +' quantity : '+this.order.quantity
+            +' Total cost : '+this.order.total_cost;
+
+        return '<p class="erlh_header">'+header_default+'</p>';
+    },
+    _build_HTML_buttons_cont : function() {
+        var html = '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_cancel_cont"></span>';
+        html += '<span class="btn_ok_cont"></span>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this.w_invoice_url = new ERLH_W_Input({
+            html_class : 'invoice_url_field',
+            jq_parent : this.jq_main_content.children('.invoice_url_cont'),
+            input_attrs : {
+                placeholder : 'Invoice URL',
+                type : 'text'
+            },
+        });
+
+        this._build_buttons_cont();
+    },
+    _build_buttons_cont : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_cancel = new ERLH_W_Button({
+            html_class : 'btn_cancel',
+            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
+            text : 'Cancel',
+            on_click : this._on_click_btn_cancel.bind(this)
+        });
+
+        this.w_btn_ok = new ERLH_W_Button({
+            html_class : 'btn_ok',
+            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
+            text : 'Ok',
+            on_click : this._on_click_btn_ok.bind(this)
+        });
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    _on_click_btn_ok : function() {
+        var invoice_url = this.w_invoice_url.get();
+        if(!invoice_url || invoice_url == '')
+            return;
+
+        invoice_url.trim();
+        ERLH_Order.server.sendinvoice(this.order.id, invoice_url, {}, this._on_server_callback.bind(this));
+    },
+    _on_server_callback : function(err, response) {
+        if (err) {
+            new ERLH_W_Message({ message : err.message });
+            return;
+        }
+
+        new ERLH_W_Message({ message : 'Invoice sent' });
+
+        this.remove();
+        this.order.invoice_url = this.w_invoice_url.get().trim();
+        if(this.options.on_sent) {
+            this.options.on_sent(this.order);
+        }
+    },
+    _on_click_btn_cancel : function() {
+        this.remove();
+        if(this.options.on_cancel) {
+            this.options.on_cancel();
+        }
+    },
+};
+/**
  * Created by erinsasha on 02/06/17.
  */
 
@@ -7538,551 +8078,6 @@ ERLH_W_Orders_Management.prototype = {
     _callback_on_order_list_order_deselected : function(id, order) {
 
     },
-};
-/**
- * Created by erinsasha on 20/06/17.
- */
-
-/**
- *
- * @param options
- * @param options.order
- * @param options.jq_parent
- * @param options.on_sent
- * @param options.on_cancel
- * @constructor
- */
-function ERLH_W_Order_Send_Manual_Invoice(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.options = options;
-    this.order = options.order;
-    this.jq_parent = options.jq_parent;
-
-    this._build();
-}
-
-ERLH_W_Order_Send_Manual_Invoice.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Order_Send_Manual_Invoice">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        html += this._build_HTML_header();
-
-        html += '<div class="invoice_url_cont"></div>';
-
-        html += this._build_HTML_buttons_cont();
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_header : function() {
-        if(this.options.dont_add_header)
-            return '';
-
-        var header_default = 'Send invoice to '
-            + this.order.user_email
-            +' for order #'+this.order.id
-            +' months : '+this.order.months
-            +' quantity : '+this.order.quantity
-            +' Total cost : '+this.order.total_cost;
-
-        return '<p class="erlh_header">'+header_default+'</p>';
-    },
-    _build_HTML_buttons_cont : function() {
-        var html = '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_cancel_cont"></span>';
-        html += '<span class="btn_ok_cont"></span>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this.w_invoice_url = new ERLH_W_Input({
-            html_class : 'invoice_url_field',
-            jq_parent : this.jq_main_content.children('.invoice_url_cont'),
-            input_attrs : {
-                placeholder : 'Invoice URL',
-                type : 'text'
-            },
-        });
-
-        this._build_buttons_cont();
-    },
-    _build_buttons_cont : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_cancel = new ERLH_W_Button({
-            html_class : 'btn_cancel',
-            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
-            text : 'Cancel',
-            on_click : this._on_click_btn_cancel.bind(this)
-        });
-
-        this.w_btn_ok = new ERLH_W_Button({
-            html_class : 'btn_ok',
-            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
-            text : 'Ok',
-            on_click : this._on_click_btn_ok.bind(this)
-        });
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    _on_click_btn_ok : function() {
-        var invoice_url = this.w_invoice_url.get();
-        if(!invoice_url || invoice_url == '')
-            return;
-
-        invoice_url.trim();
-        ERLH_Order.server.sendinvoice(this.order.id, invoice_url, {}, this._on_server_callback.bind(this));
-    },
-    _on_server_callback : function(err, response) {
-        if (err) {
-            new ERLH_W_Message({ message : err.message });
-            return;
-        }
-
-        new ERLH_W_Message({ message : 'Invoice sent' });
-
-        this.remove();
-        this.order.invoice_url = this.w_invoice_url.get().trim();
-        if(this.options.on_sent) {
-            this.options.on_sent(this.order);
-        }
-    },
-    _on_click_btn_cancel : function() {
-        this.remove();
-        if(this.options.on_cancel) {
-            this.options.on_cancel();
-        }
-    },
-};
-/**
- * Created by erinsasha on 20/06/17.
- */
-
-/**
- *
- * @param options
- * @param options.order
- * @param options.jq_parent
- * @param options.on_sent
- * @param options.on_cancel
- * @constructor
- */
-function ERLH_W_Order_Send_Manual_Invoice(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.options = options;
-    this.order = options.order;
-    this.jq_parent = options.jq_parent;
-
-    this._build();
-}
-
-ERLH_W_Order_Send_Manual_Invoice.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Order_Send_Manual_Invoice">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        html += this._build_HTML_header();
-
-        html += '<div class="invoice_url_cont"></div>';
-
-        html += this._build_HTML_buttons_cont();
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_header : function() {
-        if(this.options.dont_add_header)
-            return '';
-
-        var header_default = 'Send invoice to '
-            + this.order.user_email
-            +' for order #'+this.order.id
-            +' months : '+this.order.months
-            +' quantity : '+this.order.quantity
-            +' Total cost : '+this.order.total_cost;
-
-        return '<p class="erlh_header">'+header_default+'</p>';
-    },
-    _build_HTML_buttons_cont : function() {
-        var html = '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_cancel_cont"></span>';
-        html += '<span class="btn_ok_cont"></span>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this.w_invoice_url = new ERLH_W_Input({
-            html_class : 'invoice_url_field',
-            jq_parent : this.jq_main_content.children('.invoice_url_cont'),
-            input_attrs : {
-                placeholder : 'Invoice URL',
-                type : 'text'
-            },
-        });
-
-        this._build_buttons_cont();
-    },
-    _build_buttons_cont : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_cancel = new ERLH_W_Button({
-            html_class : 'btn_cancel',
-            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
-            text : 'Cancel',
-            on_click : this._on_click_btn_cancel.bind(this)
-        });
-
-        this.w_btn_ok = new ERLH_W_Button({
-            html_class : 'btn_ok',
-            jq_parent : jq_btns_cont.children('.btn_ok_cont'),
-            text : 'Ok',
-            on_click : this._on_click_btn_ok.bind(this)
-        });
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    _on_click_btn_ok : function() {
-        var invoice_url = this.w_invoice_url.get();
-        if(!invoice_url || invoice_url == '')
-            return;
-
-        invoice_url.trim();
-        ERLH_Order.server.sendinvoice(this.order.id, invoice_url, {}, this._on_server_callback.bind(this));
-    },
-    _on_server_callback : function(err, response) {
-        if (err) {
-            new ERLH_W_Message({ message : err.message });
-            return;
-        }
-
-        new ERLH_W_Message({ message : 'Invoice sent' });
-
-        this.remove();
-        this.order.invoice_url = this.w_invoice_url.get().trim();
-        if(this.options.on_sent) {
-            this.options.on_sent(this.order);
-        }
-    },
-    _on_click_btn_cancel : function() {
-        this.remove();
-        if(this.options.on_cancel) {
-            this.options.on_cancel();
-        }
-    },
-};
-/**
- * Created by erinsasha on 26/07/17.
- */
-
-/**
- *
- * @param options
- * @param options.order
- * @param options.organisation
- * @param options.jq_parent
- * @param options.header
- * @param options.dont_add_header
- * @constructor
- */
-function ERLH_W_Order_Details(options) {
-    options = options ? options : {};
-    this.options = options;
-    this.order = options.order;
-    this.organisation = options.organisation;
-    this.jq_parent = options.jq_parent;
-
-    this._build();
-}
-
-ERLH_W_Order_Details.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Order_Details">';
-        html += this._build_HTML_header();
-        html += this._build_order_table();
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_header : function() {
-        if(this.options.dont_add_header)
-            return '';
-
-        var header = this.options.header ? this.options.header : 'Order details:';
-
-        return '<p class="erlh_header">'+header+'</p>';
-    },
-
-    _build_order_table : function(order, options, customer_data) {
-        var html = '<table class="erlh_order_details_table"><tbody>';
-
-        var order = this.order;
-
-        if(order.org_id)
-            html += this._build_order_table_raw('Organisation', customer_data.organisation.name);
-
-        html += this._build_order_table_raw('Months', order.months);
-        html += this._build_order_table_raw('Quantity', order.quantity);
-
-        if(order.discount && order.discount > 0)
-            html += this._build_order_table_raw('Discount', order.discount);
-
-        html += this._build_order_table_raw('Total cost', order.total_cost + ' USD');
-        html += this._build_order_table_raw('Pay with', ERLH_Order.static.method_id_to_name[order.method]);
-
-        html += '</tbody></table>';
-
-        return html;
-    },
-
-    _build_order_table_raw : function(label, value) {
-        return '<tr><td class="erlh_t_label">'+label+'</td><td class="erlh_t_value">'+value+'</td></tr>';
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-    },
-    remove : function() {
-        this.jq_main.remove();
-    },
-};
-/**
- * Created by erinsasha on 26/07/17.
- */
-
-/**
- *
- * @param options
- * @param options.order_id
- * @param options.jq_parent
- * @constructor
- */
-function ERLH_W_Order_Completed_Popup(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.options = options;
-    this.order_id = options.order_id;
-    this.jq_parent = options.jq_parent;
-
-    this._process();
-}
-
-ERLH_W_Order_Completed_Popup.prototype = {
-    _process : function() {
-        this._request_order_details();
-    },
-    _request_order_details : function() {
-        var that = this;
-
-        erlh_server.send(erlh_server.url.order.list,
-            {
-                filter : {
-                    id : this.order_id
-                },
-                add_users : true,
-                add_organisations : true,
-            },
-            function(err, response) {
-                if(err) {
-                    new ERLH_W_Message({ message : err.message });
-                } else {
-                    that._on_get_order_detail_from_server(response);
-                }
-            });
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Order_Completed_Popup">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        html += this._build_HTML_header();
-
-        html += this._build_instruction_cont();
-        html += '<div class="er_order_details_cont"></div>';
-
-        html += this._build_HTML_buttons_cont();
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_header : function() {
-        if(this.options.dont_add_header)
-            return '';
-
-        var header_default = 'You\'ve got new license!';
-        /*
-            + this.order.user_email
-            +' for order #'+this.order.id
-            +' months : '+this.order.months
-            +' quantity : '+this.order.quantity
-            +' Total cost : '+this.order.total_cost;*/
-
-        return '<p class="erlh_header">'+header_default+'</p>';
-    },
-    _build_HTML_buttons_cont : function() {
-        var html = '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_close_cont"></span>';
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_instruction_cont : function() {
-        var html = '<div class="erlh_instruction_cont">';
-
-        html += '<p><b><a target="_blank" href="https://www.youtube.com/watch?v=X_rwdD0kcj8&feature=youtu.be&hd=1">To activate your license, please:</a></b></p>';
-
-        html += '<ul style="list-style-type: none; padding-left: 1em;">';
-        html += '<li>1) Install <a href="https://chrome.google.com/webstore/detail/linked-helper-automate-wo/ggmfnfhhfapdhpbhpfhllhdlimdghmaa">Linked Helper</a> in your Chrome</li>';
-        html += '<li>2) Install <a href="https://chrome.google.com/webstore/detail/lh-connector/ooicjhkkfdijjlnfopfakboefcmifdlh">LH Connector</a> - our free add-on for Linked Helper</li>';
-        html += '<li>3) Open <a href="https://linkedin.com">https://LinkedIn.com</a></li>';
-        html += '<li>4) Go to "My Account" in Linked Helper widget at the right bottom of LinkedIn page</li>';
-        html += '<li>5) Login with '+erlh_curr_user.user.email+'</li>';
-        html += '<li><i>Just reload LinkedIn page, if you already did this before</i></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        new ERLH_W_Order_Details({
-            order : this.order,
-            organisation : this.organisation,
-            jq_parent : this.jq_main_content.children('.er_order_details_cont')
-        });
-
-        this._build_buttons_cont();
-    },
-    _build_buttons_cont : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_close = new ERLH_W_Button({
-            html_class : 'btn_close',
-            jq_parent : jq_btns_cont.children('.btn_close_cont'),
-            text : 'Close',
-            on_click : this._on_click_btn_close.bind(this)
-        });
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    _on_click_btn_close : function() {
-        this.remove();
-        if(this.options.on_cancel) {
-            this.options.on_cancel();
-        }
-    },
-    _on_get_order_detail_from_server : function(response) {
-        if(response.orders.length == 0) {
-            new ERLH_W_Message({ message : 'Order with ID='+this.order_id+' not found!' });
-            return;
-        }
-
-        this.order = response.orders[0];
-        this.organisation = response.organisations.length > 0 ? response.organisations[0] : null;
-
-        this.users = {};
-        for(i=0; i<response.users.length; i++) {
-            user = new ERLH_User(response.users[i]);
-            this.users[user.id] = user;
-        }
-
-        this._build();
-    }
 };
 /**
  * Created by erinsasha on 31/05/17.
@@ -8940,6 +8935,97 @@ ERLH_W_Organisation_Management.prototype = {
     },
 };
 /**
+ * Created by erinsasha on 26/04/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.dont_add_header
+ * @param options.jq_parent
+ * @constructor
+ */
+function ERLH_W_Organisations_Management(options) {
+    options = options ? options : {};
+
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+
+    this._build();
+}
+
+ERLH_W_Organisations_Management.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ERLH_W_Organisations_Management">';
+        if(!this.options.dont_add_header)
+            html += '<p class="erlh_header">Organisations Management</p>';
+
+        html += '<div class="two_columns_cont"></div>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        this.jq_two_column = new ERLH_W_Two_Column({
+            jq_parent : this.jq_main.children('.two_columns_cont')
+        });
+
+        this.w_organisations_list_with_control = new ERLH_W_Organisations_List_With_Control({
+            jq_parent : this.jq_two_column.get_first_column(),
+            filter : {},
+            is_admin_header_set : true,
+            add_header_filter : true,
+            on_organisation_selected : this._callback_on_organisation_list_organisation_selected.bind(this),
+            on_organisation_deselected : this._callback_on_organisation_list_organisation_deselected.bind(this),
+        });
+
+        this.w_organisation_management = new ERLH_W_Organisation_Management({
+            jq_parent : this.jq_two_column.get_second_column(),
+            dont_add_header : true,
+            on_organisation_updated : this._callback_on_organisation_updated.bind(this),
+            on_organisation_deleted : this._callback_on_organisation_deleted.bind(this)
+        });
+        this.w_organisation_management.hide();
+
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    on_show : function() {
+        this.w_organisations_list_with_control.refresh();
+    },
+    on_hide : function() {
+
+    },
+
+    _on_click_btn_create : function() {
+
+    },
+
+    _callback_on_organisation_list_organisation_selected : function(id, organisation) {
+        this.w_organisation_management.set_organisation(organisation);
+        this.w_organisation_management.show();
+    },
+    _callback_on_organisation_list_organisation_deselected : function(id, organisation) {
+        this.w_organisation_management.hide();
+    },
+    _callback_on_organisation_updated : function(organisation) {
+        this.w_organisations_list_with_control.update_object(organisation);
+    },
+    _callback_on_organisation_deleted : function(organisation) {
+        this.w_organisations_list_with_control.update_object(organisation);
+    },
+};
+/**
  * Created by erinsasha on 25/04/17.
  */
 
@@ -9217,97 +9303,6 @@ ERLH_W_Organisations_List_With_Control.prototype = {
     },
 };
 /**
- * Created by erinsasha on 26/04/17.
- */
-
-/**
- *
- * @param options
- * @param options.dont_add_header
- * @param options.jq_parent
- * @constructor
- */
-function ERLH_W_Organisations_Management(options) {
-    options = options ? options : {};
-
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-
-    this._build();
-}
-
-ERLH_W_Organisations_Management.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ERLH_W_Organisations_Management">';
-        if(!this.options.dont_add_header)
-            html += '<p class="erlh_header">Organisations Management</p>';
-
-        html += '<div class="two_columns_cont"></div>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        this.jq_two_column = new ERLH_W_Two_Column({
-            jq_parent : this.jq_main.children('.two_columns_cont')
-        });
-
-        this.w_organisations_list_with_control = new ERLH_W_Organisations_List_With_Control({
-            jq_parent : this.jq_two_column.get_first_column(),
-            filter : {},
-            is_admin_header_set : true,
-            add_header_filter : true,
-            on_organisation_selected : this._callback_on_organisation_list_organisation_selected.bind(this),
-            on_organisation_deselected : this._callback_on_organisation_list_organisation_deselected.bind(this),
-        });
-
-        this.w_organisation_management = new ERLH_W_Organisation_Management({
-            jq_parent : this.jq_two_column.get_second_column(),
-            dont_add_header : true,
-            on_organisation_updated : this._callback_on_organisation_updated.bind(this),
-            on_organisation_deleted : this._callback_on_organisation_deleted.bind(this)
-        });
-        this.w_organisation_management.hide();
-
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    on_show : function() {
-        this.w_organisations_list_with_control.refresh();
-    },
-    on_hide : function() {
-
-    },
-
-    _on_click_btn_create : function() {
-
-    },
-
-    _callback_on_organisation_list_organisation_selected : function(id, organisation) {
-        this.w_organisation_management.set_organisation(organisation);
-        this.w_organisation_management.show();
-    },
-    _callback_on_organisation_list_organisation_deselected : function(id, organisation) {
-        this.w_organisation_management.hide();
-    },
-    _callback_on_organisation_updated : function(organisation) {
-        this.w_organisations_list_with_control.update_object(organisation);
-    },
-    _callback_on_organisation_deleted : function(organisation) {
-        this.w_organisations_list_with_control.update_object(organisation);
-    },
-};
-/**
  * Created by erinsasha on 23/07/17.
  */
 
@@ -9528,6 +9523,11 @@ ERLH_W_Platron_Send_Receipt.prototype = {
     },
 
 };
+/**
+ * Created by erinsasha on 03/06/17.
+ */
+
+
 /**
  * Created by erinsasha on 22/04/17.
  */
@@ -11268,6 +11268,1268 @@ ERLH_W_Users_Management.prototype = {
     },
 };
 /**
+ * Created by erinsasha on 21/08/17.
+ */
+function ER_Widget_New_Endorse_List (options) {
+    this.options = options;
+
+    this.er_Widget_New_Something = new ER_Widget_New_Something({
+        callback_on_create : this.callback_on_create.bind(this),
+        html_main_class : 'ER_Widget_New_Endorse_List',
+        input_placeholder : 'List name',
+        jq_parent : options.jq_parent
+    });
+
+    this.er_Widget_New_Something.build_main_view();
+};
+
+ER_Widget_New_Endorse_List.prototype = {
+    callback_on_create : function(name) {
+        if(er_endorse_control.is_list_with_id_exists(name)) {
+            this.er_Widget_New_Something.info_popup_show('List with such name already exists');
+        } else {
+            var that = this;
+            er_endorse_control.create_new_endorse_as_active(name)
+                .then(function() {
+                    that.er_Widget_New_Something.close();
+                });
+        }
+    },
+};
+/**
+ * Created by erinsasha on 21/08/17.
+ */
+
+function ER_Widget_Delete_Endorse(options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Delete_Endorse.prototype = {
+    _HTML_build_main_view : function() {
+        var er_inactive = er_endorse_control.is_default_endorse_active() ? 'er_inactive' : '';
+        return '<button class="ER_Widget_Delete_Endorse danger '+er_inactive+'">Delete current list</button>';
+    },
+    _add_handlers : function() {
+        window.addEventListener(
+            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
+            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
+            false);
+
+        this.jq_main.click(this.on_click_button.bind(this));
+    },
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    on_click_button : function() {
+        if(this.jq_main.hasClass('er_inactive'))
+            return;
+
+        er_main_view.show_yes_no_dialog(
+            'Delete list "'+er_endorse_control.get_active_list_id()+'"?',
+            this.on_click_yes_delete_list.bind(this)
+        );
+    },
+    on_click_yes_delete_list : function() {
+        er_endorse_control.delete_list(er_endorse_control.get_active_list_id());
+    },
+    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
+        if(er_endorse_control.is_default_endorse_active()) {
+            this.jq_main.addClass('er_inactive');
+        } else {
+            this.jq_main.removeClass('er_inactive');
+        }
+    },
+};
+
+/**
+ * Created by erinsasha on 22/08/17.
+ */
+//ER_W_Endorse_Mode_Toggle
+
+/**
+ *
+ * @param options
+ * @param options.jq_parent
+ * @constructor
+ */
+function ER_W_Endorse_Mode_Toggle(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+
+    this._process();
+}
+
+ER_W_Endorse_Mode_Toggle.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Endorse_Mode_Toggle endorse_mode_cont">';
+
+        html += this._HTML_build_endorse_mode_toggle();
+
+        html += '<div class="prefs_cont">';
+        html += this._HTML_build_endorse_mode_specified();
+        html += this._HTML_build_endorse_mode_first();
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    },
+    _HTML_build_endorse_mode_toggle : function() {
+        var setAll = '', setFirst = '', setSpecified ='';
+
+        var endorse_mode = er_endorse_endorser.get_endorse_mode();
+
+        switch (endorse_mode) {
+            case er_endorse_endorser.CONST_ENDORSE_MODE_ALL          : setAll = 'set'; break;
+            case er_endorse_endorser.CONST_ENDORSE_MODE_FIRST        : setFirst = 'set'; break;
+            case er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED    : setSpecified = 'set'; break;
+        }
+
+        var html = '<div class="b2ctoggle endorse_mode_toggle">';
+        html += '<span class="label"></span>';
+        html += '<span class="values">' +
+            '<span class="togglevalue all left '+setAll+'" data-val="all"></span>' +
+            '<span class="togglevalue first '+setFirst+'" data-val="first"></span>' +
+            '<span class="togglevalue specified right '+setSpecified+'" data-val="specified"></span>' +
+            '</span>';
+        html += '</div>';
+
+        return html;
+    },
+    _HTML_build_endorse_mode_specified : function() {
+        var hidden = '';
+        if (er_endorse_endorser.get_endorse_mode() != er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED)
+            hidden = 'hidden';
+
+        return '<div class="tags_cont endorse_skills_cont '+hidden+'"></div>';
+    },
+    _HTML_build_endorse_mode_first : function() {
+        var hidden = '';
+        if (er_endorse_endorser.get_endorse_mode() != er_endorse_endorser.CONST_ENDORSE_MODE_FIRST)
+            hidden = 'hidden';
+
+        var html = '<div class="endorse_mode_first_cont er_label_input_cont '+hidden+'">';
+        html += '<span class="label"></span>';
+
+        var limit = er_endorse_endorser.get_max_endorse_skills_count();
+
+        html += '<input class="endorse_mode_first_limit" type="text" value="'+limit+'">';
+        html += '</div>';
+        return html;
+    },
+
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        this._add_handlers();
+    },
+    _add_handlers : function() {
+        this.jq_endorse_mode_toggle = this.jq_main.find('.endorse_mode_toggle').b2ctoggle({
+            multiMode : false,
+            onValueChange : this._on_endorse_mode_toggle_state_change.bind(this)
+        });
+
+        this.jq_endorse_mode_first_cont = this.jq_main.find('.endorse_mode_first_cont');
+        
+        this._add_handlers_endorse_skills_cont();
+    },
+    _add_handlers_endorse_skills_cont : function() {
+        this.jq_endorse_skills_cont = this.jq_main.find('.endorse_skills_cont');
+        
+        var skills = er_endorse_endorser.get_skill_for_endorse();
+        this.jq_endorse_skills_cont.b2ctags({
+            tags : skills,
+            placeholder : 'Input skill and press Enter',
+            unsetAllEnabled : false,
+            onChanged : this._on_endorse_skills_cont_changed.bind(this)
+        });
+    },
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    _on_endorse_mode_toggle_state_change : function(states) {
+        if(this.jq_endorse_mode_toggle.b2ctoggle('isset', 'all')) {
+            this.jq_endorse_mode_first_cont.addClass('hidden');
+            this.jq_endorse_skills_cont.addClass('hidden');
+            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_ALL);
+        } else if (this.jq_endorse_mode_toggle.b2ctoggle('isset', 'first')) {
+            this.jq_endorse_mode_first_cont.removeClass('hidden');
+            this.jq_endorse_skills_cont.addClass('hidden');
+            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_FIRST);
+        } else if (this.jq_endorse_mode_toggle.b2ctoggle('isset', 'specified')) {
+            this.jq_endorse_mode_first_cont.addClass('hidden');
+            this.jq_endorse_skills_cont.removeClass('hidden');
+            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED);
+        }
+    },
+    _on_endorse_skills_cont_changed : function(skills) {
+        er_endorse_endorser.set_skill_for_endorse(skills);
+    },
+};
+/**
+ * Created by erinsasha on 23/08/17.
+ */
+function ER_Widget_Endorse_Export (options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Endorse_Export.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<div class="ER_Widget_Endorse_Export">';
+
+        html += this._HTML_build_delimiter_selector();
+        html += '<button class="btn_export_file"></button>';
+        html += '<a class="help er_blog" target="_blank" href="https://medium.com/linked-helper/how-to-import-csv-file-into-ms-excel-b4aee2f30375?source=---------1">Read How to Import CSV file into MS Excel</a>';
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_delimiter_selector : function() {
+        var html = '<div class="delimiter_selector_cont er_label_input_cont">';
+
+        html += '<span class="label">Delimiter</span>';
+
+        html += '<select class="select_delimiter">';
+
+        html += '<option value="," selected>, - Google Sheets</option>';
+        html += '<option value=";">; - Microsoft Excel</option>';
+
+        html += '</select>';
+
+        html += '</div>';
+
+        return html;
+    },
+
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+        this.jq_btn_export_file = this.jq_main.find('.btn_export_file');
+        this.jq_btn_export_file.click(this._on_btn_export_file_click.bind(this));
+
+        this.jq_select_delimiter = this.jq_main.find('.select_delimiter');
+    },
+
+
+
+    is_widget_visible : function() {
+        return this.jq_main.height() > 0;
+    },
+
+    _on_btn_export_file_click : function() {
+        if(this.jq_btn_export_file.hasClass('started'))
+            return;
+
+        var that = this;
+
+        var evtPK = document.createEvent("CustomEvent");
+        evtPK.initCustomEvent('EVENT_IS_LK_VALID', true, true,
+            function(result) {
+                if (result) {
+                    that.jq_btn_export_file.addClass('started');
+
+                    var jq_option = that.jq_select_delimiter.find('option:selected');
+                    var delimiter = jq_option.attr('value');
+
+                    er_profiles_common_csv.delimiter = delimiter;
+                    er_profiles_common_csv.generate_csv_file_for_ids(er_endorsed_control.get_endorsed_ids())
+                        .then(function() {
+                            that.jq_btn_export_file.removeClass('started');
+                        });
+
+                } else {
+                    //that._on_license_not_valid();
+                }
+            }
+        );
+        window.dispatchEvent(evtPK);
+    },
+};
+/**
+ * Created by erinsasha on 21/08/17.
+ */
+
+/**
+ *
+ * @param options
+ * @constructor
+ */
+function ER_Widget_Endorse_Selector(options) {
+    options = options || {};
+    this.options = options;
+
+    this.jq_parent = options.jq_parent;
+    this.build_main_view();
+};
+
+ER_Widget_Endorse_Selector.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<span class="ER_Widget_Endorse_Selector">';
+
+        html += '<select class="select_endorse_list">';
+
+        html += '<option value="'+ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID+'">...CREATE NEW</option>';
+
+
+        var active_list_id = er_endorse_control.get_active_list_id();
+        var list = er_endorse_control.get_all_lists_ids();
+
+        for(var i=0, current_list_id; i < list.length; i++) {
+            current_list_id = list[i];
+            html += this._HTML_build_select_option(current_list_id, active_list_id == current_list_id);
+        }
+
+        html += '</select>';
+
+        html += '</span>';
+
+        return html;
+    },
+    _HTML_build_select_option : function(id, is_selected) {
+        var selected = is_selected ? 'selected' : '';
+        return '<option value="'+id.replace(/"/g,'&quot;')+'" '+selected+'>'+id.replace(/"/g,'&quot;')+'</option>';
+    },
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+        this.jq_select = this.jq_main.find('.select_endorse_list');
+        this.jq_select.change(this._on_change_select_endorse_list.bind(this));
+
+        window.addEventListener(
+            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
+            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
+            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ENDORSE_DELETED,
+            this.on_EVENT_ENDORSE_DELETED.bind(this),
+            false);
+    },
+
+    _add_new_list_to_selector : function(id) {
+        if (this._is_select_option_created(id))
+            return;
+
+        var is_selected = er_endorse_control.get_active_list_id() == id;
+
+        var option = this._HTML_build_select_option(id, is_selected);
+        this.jq_select.append($(option));
+    },
+
+    _set_selected_list : function(id) {
+        if(!this._is_select_option_created(id)) {
+            this._add_new_list_to_selector(id);
+        }
+
+        this.jq_select.val(id);
+    },
+    _is_select_option_created : function(id) {
+        return this._get_select_option(id).length == 1;
+    },
+    _get_select_option : function(id) {
+        return this.jq_select.find('option[value="'+id.replace(/"/g,'\\\"')+'"]');
+    },
+    _delete_select_option : function(id) {
+        this._get_select_option(id).remove();
+    },
+
+    _show_create_list_dialog : function() {
+        var er_Widget_New_Endorse_List = new ER_Widget_New_Endorse_List({
+            jq_parent : this.jq_main
+        });
+    },
+    _on_change_select_endorse_list : function(event) {
+        var jq_option = this.jq_select.find('option:selected');
+        var list_id = jq_option.attr('value');
+        if (list_id == ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID) {
+            this._show_create_list_dialog();
+            this.jq_select.val(er_endorse_control.get_active_list_id());
+        } else {
+            er_endorse_control.set_active_list_id(list_id);
+        }
+    },
+    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
+        var id = event.detail.id;
+        this._add_new_list_to_selector(id);
+    },
+    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
+        var endorse = event.detail;
+        this._set_selected_list(endorse.id);
+    },
+    on_EVENT_ENDORSE_DELETED : function(event) {
+        var id = event.detail;
+        this._delete_select_option(id);
+    },
+};
+ER_Widget_Endorse_Selector.const = {};
+ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID = '__create_new_endorse_list__';
+/**
+ * Created by erinsasha on 11/08/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.jq_parent
+ * @constructor
+ */
+function ER_W_Endorse_Timeout_Settings(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.jq_parent = options.jq_parent;
+    this.options = options;
+
+    this._process();
+}
+
+ER_W_Endorse_Timeout_Settings.prototype = {
+    _process : function() {
+        this.w_timeout_settings = new ER_W_Timeout_Settings({
+            header : 'Timeouts for Endorse my contacts',
+            timeouts_names : er_endorse_timeouts.const_timeouts_names,
+            timeouts : er_endorse_timeouts.get_timeouts(),
+            fast_timeouts : er_endorse_timeouts.const_timeout_fast,
+            safe_timeouts : er_endorse_timeouts.const_timeout_safe,
+            jq_parent : this.jq_parent,
+            callback_save_settings : er_endorse_timeouts.save_timeouts_from_object.bind(er_endorse_timeouts)
+        });
+    },
+};
+/**
+ * Created by erinsasha on 22/08/17.
+ */
+er_endorse_view = window.er_endorse_view || {
+        type : 'er_endorse',
+        tittle : 'Endorse my contacts',
+
+        jq_main : null,
+
+        init_main : function() {
+            if (this.inited)
+                return;
+
+            this.jq_main = $(this._HTML_build_main());
+
+            this._add_handlers();
+            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
+
+            if (er_endorse_endorser.is_mode_on_and_tab_active() || er_endorse_collector.is_mode_on_and_tab_active())
+                er_main_view.show_settings(this.type);
+
+            this.inited = true;
+        },
+        _HTML_build_main : function() {
+            var html = '<div class="er_sub_view '+this.type+'">';
+
+            html += this._HTML_build_tabs_pannel();
+
+            html += this._HTML_build_content_collect();
+            html += this._HTML_build_content_endorse();
+            html += this._HTML_build_content_export();
+
+            html += '</div>';
+            return html;
+        },
+
+        _HTML_build_tabs_pannel : function() {
+            var html = '<div class="tabs_pannel">';
+
+            var collect_set = 'set', endorse_set = '';
+            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active()) {
+                collect_set = '';
+                endorse_set = 'set';
+            }
+
+            html += '<span class="tab '+collect_set+'" data-tab="collect">Collect</span>';
+            html += '<span class="tab '+endorse_set+'" data-tab="endorse">Endorse</span>';
+            html += '<span class="tab" data-tab="export">Export</span>';
+
+            html += '</div>';
+
+            return html;
+        },
+        _HTML_build_content_collect : function() {
+            var collect_set = 'set';
+            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active())
+                collect_set = '';
+
+            var html = '<div class="content '+collect_set+'" data-type="collect">';
+            html += '</div>';
+            return html;
+        },
+        _HTML_build_content_endorse : function() {
+            var endorse_set = '';
+
+            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active())
+                endorse_set = 'set';
+
+            var html = '<div class="content '+endorse_set+'" data-type="endorse">';
+            html += '</div>';
+            return html;
+        },
+        _HTML_build_content_export : function() {
+            var html = '<div class="content" data-type="export">';
+            html += '</div>';
+            return html;
+        },
+
+
+        _add_handlers : function() {
+            new ER_Widget_How_To({
+                jq_parent : this.jq_main,
+                links : [ER_Widget_How_To.links.er_endorse_view]
+            });
+
+            this.jq_main.children('.tabs_pannel').children('.tab').click(this._on_click_tab.bind(this));
+
+            var jq_content_collect = this.jq_main.find('.content[data-type=collect]');
+            var jq_content_endorse = this.jq_main.find('.content[data-type=endorse]');
+            var jq_content_export = this.jq_main.find('.content[data-type=export]');
+
+            this.w_collect = new ER_Widget_Endorse_Collect({jq_parent : jq_content_collect});
+            this.w_endorse = new ER_Widget_Endorse_Endorse({jq_parent : jq_content_endorse});
+            this.w_export = new ER_Widget_Endorse_Export({jq_parent : jq_content_export});
+        },
+
+        is_widget_visible : function() {
+            return this.jq_main.height() > 0;
+        },
+
+        _on_main_view_ready_for_sub_view : function() {
+            this.init_main();
+        },
+        _on_click_tab : function(event) {
+            var jq_tab = $(event.target);
+            if(jq_tab.hasClass('set'))
+                return;
+
+            jq_tab.siblings('.tab.set').removeClass('set');
+            this.jq_main.children('.content.set').removeClass('set');
+
+            jq_tab.addClass('set');
+            this.jq_main.children('.content[data-type='+jq_tab.attr('data-tab')+']').addClass('set');
+        },
+
+    };
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_endorse_view._on_main_view_ready_for_sub_view() });
+/**
+ * Created by erinsasha on 22/08/17.
+ */
+function ER_Widget_Endorse_Endorse (options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Endorse_Endorse.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<div class="ER_Widget_Endorse_Endorse">';
+
+        html += this._HTML_build_contacts_for_endorse();
+        html += this._HTML_build_endorsed_total();
+        html += this._HTML_build_endorsed_in_current_period();
+        html += this._HTML_build_current_period_state();
+        html += this._HTML_build_next_period_start();
+
+        html += this._HTML_build_endorse_period();
+        html += this._HTML_build_endorse_limit();
+
+        html += this._HTML_build_endorse_mode_cont();
+
+        html += this._HTML_build_btn_begin_endorse();
+
+        html += '<button class="btn_timeout_settings">Timeout settings</button>';
+
+        html += '</div>';
+        return html;
+    },
+
+    _HTML_build_contacts_for_endorse : function() {
+        var value = er_endorse_queue.get_queue_length();
+
+        return '<div class="stat_cont contacts_for_endorse"><span class="title label"></span><span class="er_contacts_for_endorse value">'+value+'</span></div>';
+    },
+    _HTML_build_endorsed_total : function() {
+        var count_sent = er_endorsed_control.get_endorsed_counter();
+
+        return '<div class="stat_cont endorsed_total"><span class="title label"></span><span class="er_endorsed_total value">'+count_sent+'</span></div>';
+    },
+    _HTML_build_endorsed_in_current_period : function() {
+        var count_sent = er_endorse_endorser.get_endorsed_in_current_period();
+
+        return '<div class="stat_cont endorsed_in_current_period"><span class="title label"></span><span class="er_endorsed_in_current_period value">'+count_sent+'</span></div>';
+    },
+    _HTML_build_current_period_state : function() {
+        var state = er_endorse_endorser.get_current_period_state();
+
+        return '<div class="stat_cont current_period_state"><span class="title label"></span><span class="er_current_period_state value">'+state+'</span></div>';
+    },
+    _HTML_build_next_period_start : function() {
+        var date = er_endorse_endorser.get_next_period_start();
+        var hidden = 'hidden';
+
+        if (date != null) {
+            hidden = '';
+            date = er_utils.datetimeJSToUser(date);
+        }
+        return '<div class="stat_cont next_period_start '+hidden+'"><span class="title label"></span><span class="er_next_period_start value">'+date+'</span></div>';
+    },
+
+
+    _HTML_build_endorse_limit : function() {
+        var html = '<div class="endorse_limit_cont er_label_input_cont">';
+        html += '<span class="label"></span>';
+
+        var limit = er_endorse_endorser.get_endorsed_limit_per_period();
+
+        html += '<input class="endorse_limit" type="text" value="'+limit+'">';
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_endorse_period : function() {
+        var html = '<div class="endorse_period_cont er_label_input_cont">';
+        html += '<span class="label"></span>';
+
+        var period = er_endorse_endorser.get_endorse_period_hours_between();
+
+        html += '<input class="endorse_period" type="text" value="'+period+'">';
+        html += '</div>';
+        return html;
+    },
+
+    _HTML_build_btn_begin_endorse : function() {
+        var btn_begin_endorse_started = er_endorse_endorser.is_endorser_switched_on() ? 'started' : '';
+        return '<button class="btn_begin_endorse '+btn_begin_endorse_started+'"></button>';
+    },
+
+    _HTML_build_endorse_mode_cont : function() {
+        return '<div class="cont_endorse_mode_cont"></div>';
+    },
+
+
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+        this._add_handlers_for_inputs();
+        this._add_handlers_for_stats();
+        this._add_handlers_for_buttons();
+
+        er_main_view._add_callback_on_click_mode_after_turn_on('er_new_endorse_mode', this._on_click_mode_after_turn_on.bind(this));
+
+        window.addEventListener(
+            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
+            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
+            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ENDORSE_DELETED,
+            this.on_EVENT_ENDORSE_DELETED.bind(this),
+            false);
+
+        this.closure_refresh = this._refresh.bind(this);
+        this._refresh();
+    },
+    _add_handlers_for_inputs : function() {
+        this.jq_input_endorse_period = this.jq_main.find('.endorse_period');
+        this.jq_input_endorse_period.change(this._on_change_input_endorse_period.bind(this));
+
+        this.jq_input_endorse_limit = this.jq_main.find('.endorse_limit');
+        this.jq_input_endorse_limit.change(this._on_change_input_endorse_limit.bind(this));
+
+        this.jq_main.find('.endorse_mode_first_limit').change(this._on_change_input_endorse_mode_first_limit.bind(this));
+
+        this.w_endorse_mode_toggle = new ER_W_Endorse_Mode_Toggle({jq_parent : this.jq_main.find('.cont_endorse_mode_cont')});
+    },
+    _add_handlers_for_stats : function() {
+        this.jq_contacts_for_endorse = this.jq_main.find('.er_contacts_for_endorse');
+        this.jq_endorsed_total = this.jq_main.find('.er_endorsed_total');
+        this.jq_endorsed_in_current_period = this.jq_main.find('.er_endorsed_in_current_period');
+        this.jq_current_period_state = this.jq_main.find('.er_current_period_state');
+        this.jq_next_period_start_cont = this.jq_main.find('.stat_cont.next_period_start');
+        this.jq_next_period_start = this.jq_next_period_start_cont.find('.er_next_period_start');
+    },
+    _add_handlers_for_buttons : function() {
+        this.jq_btn_begin_endorse = this.jq_main.find('.btn_begin_endorse');
+        this.jq_btn_begin_endorse.click(this._on_click_btn_begin_endorse.bind(this));
+        this.jq_main.find('button.btn_timeout_settings').click(this._on_click_btn_timeout_settings.bind(this));
+    },
+
+    _refresh : function(refresh_once_anyway) {
+        if(this.is_widget_visible() || refresh_once_anyway) {
+            this._refresh_contacts_for_endorse();
+            this.jq_endorsed_total.text(er_endorsed_control.get_endorsed_counter());
+            this.jq_endorsed_in_current_period.text(er_endorse_endorser.get_endorsed_in_current_period());
+            this.jq_current_period_state.text(er_endorse_endorser.get_current_period_state());
+            this._refresh_next_period_start();
+            this._refresh_btn_begin_endorse();
+        }
+        if(!refresh_once_anyway)
+            setTimeout(this.closure_refresh, this.CONST_REFRESH_STAT_TIMEOUT);
+    },
+    _refresh_contacts_for_endorse : function() {
+        var value = er_endorse_queue.get_queue_length();
+
+        this.jq_contacts_for_endorse.text(value);
+    },
+    _refresh_next_period_start : function() {
+        var date = er_endorse_endorser.get_next_period_start();
+        if (date) {
+            this.jq_next_period_start_cont.removeClass('hidden');
+            this.jq_next_period_start.text(er_utils.datetimeJSToUser(date));
+        } else {
+            this.jq_next_period_start_cont.addClass('hidden');
+        }
+    },
+    _refresh_btn_begin_endorse : function() {
+        if (er_endorse_endorser.is_endorser_switched_on()) {
+            this.jq_btn_begin_endorse.addClass('started');
+        } else {
+            this.jq_btn_begin_endorse.removeClass('started');
+        }
+    },
+
+    _check_limits_and_warn : function() {
+        if(er_endorse_endorser.is_limits_are_safe()) {
+            this.jq_input_endorse_period.removeClass('warning');
+            this.jq_input_endorse_limit.removeClass('warning');
+        } else {
+            this.jq_input_endorse_period.addClass('warning');
+            this.jq_input_endorse_limit.addClass('warning');
+
+            er_main_view._info_popup_show(er_translator.get_text('er_endorse_view', 'messages', 'limits_warning', er_gen_settings.get_current_language_id()));
+        }
+    },
+
+    is_widget_visible : function() {
+        return this.jq_main.height() > 0;
+    },
+
+    _on_change_input_endorse_period : function(event) {
+        var jqInput = $(event.target);
+        jqInput.val(er_endorse_endorser.set_endorse_period_hours_between(jqInput.val()));
+        this._check_limits_and_warn();
+    },
+    _on_change_input_endorse_limit : function(event) {
+        var jqInput = $(event.target);
+        jqInput.val(er_endorse_endorser.set_endorsed_limit_per_period(jqInput.val()));
+        this._check_limits_and_warn();
+    },
+    _on_change_input_endorse_mode_first_limit : function(event) {
+        var jqInput = $(event.target);
+        jqInput.val(er_endorse_endorser.set_max_endorse_skills_count(jqInput.val()));
+    },
+    _on_click_btn_begin_endorse : function(event, start_any_way) {
+        if (!start_any_way && this.jq_btn_begin_endorse.hasClass('started')) {
+            localStorage.er_new_endorse_mode = 'false';
+            er_endorse_endorser.tab_delete_mode();
+            this.jq_btn_begin_endorse.removeClass('started');
+        } else {
+            this.jq_btn_begin_endorse.addClass('started');
+            er_endorse_endorser.tab_add_mode();
+            er_endorse_endorser.begin_endorse_all_contacts();
+        }
+    },
+    _on_click_btn_timeout_settings : function() {
+        new ER_W_Endorse_Timeout_Settings({});
+    },
+    _on_click_mode_after_turn_on : function() {
+        var contacts_for_endorse = er_endorse_queue.get_queue_length();
+
+        var that = this;
+
+        if (contacts_for_endorse > 0) {
+            er_main_view.show_yes_no_dialog(
+                er_translator.get_text('er_endorse_view', 'messages', 'need_begin_endorse', er_gen_settings.get_current_language_id()),
+                function() {
+                    that._on_click_btn_begin_endorse(null, true);
+                }
+            );
+        } else {
+            er_main_view.show_yes_no_dialog('Your queue is empty! Please, collect contact first');
+            /*er_main_view.show_yes_no_dialog(
+                er_translator.get_text('er_endorse_view', 'messages', 'need_begin_collect_for_endorse', er_gen_settings.get_current_language_id()),
+                function() {
+                    that._on_click_btn_collect(null, true);
+                }
+            );*/
+        }
+    },
+    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
+        //this._refresh(true);
+    },
+    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
+        this._refresh(true);
+    },
+    on_EVENT_ENDORSE_DELETED : function(event) {
+        //this._refresh(true);
+    },
+};
+ER_Widget_Endorse_Endorse.CONST_REFRESH_STAT_TIMEOUT = 5000;
+/**
+ * Created by erinsasha on 21/08/17.
+ */
+function ER_Widget_Endorse_Collect (options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Endorse_Collect.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<div class="ER_Widget_Endorse_Collect">';
+
+        html += this._HTML_build_list_select_cont();
+        html += this._HTML_build_btn_collect();
+        html += this._HTML_build_list_stats();
+        html += '<button class="view_collected">View collected</button>';
+        html += '<button class="btn_lists_manager">Open lists manager</button>';
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_list_select_cont : function() {
+        var html = '<div class="wrapper_list_select_cont">';
+
+        html += '<span class="label">List</span>';
+
+        html += '</div>';
+
+        return html;
+    },
+    _HTML_build_btn_collect : function() {
+        var started = er_endorse_collector.get_mode_endorse_collect() ? 'started' : '';
+        return '<button class="collect '+started+'"></button>';
+    },
+    _HTML_build_list_stats : function() {
+        var html = '<div class="list_stats_cont">';
+
+        html += this._HTML_build_profiles_collected();
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_profiles_collected : function() {
+        return '<div class="stat_cont profiles_collected_cont"><span class="title label">Already collected</span><span class="er_count_new value">0</span></div>';
+    },
+
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+        this.er_Widget_Endorse_Selector = new ER_Widget_Endorse_Selector({
+            jq_parent : this.jq_main.find('.wrapper_list_select_cont')
+        });
+
+        this.er_Widget_Delete_Endorse = new ER_Widget_Delete_Endorse({
+            jq_parent : this.jq_main
+        });
+
+        this.jq_btn_collect = this.jq_main.find('button.collect');
+        this.jq_btn_collect.click(this._on_click_btn_collect.bind(this));
+
+        this.jq_btn_view_collected = this.jq_main.find('button.view_collected');
+        this.jq_btn_view_collected.click(this._on_click_btn_view_collected.bind(this));
+
+        this.jq_main.find('.btn_lists_manager').click(this._on_click_btn_lists_manager.bind(this));
+
+        this.jq_profiles_collected_value = this.jq_main.find('.profiles_collected_cont .value');
+
+        window.addEventListener(
+            er_endorse_collector.EVENT_ENDORSE_COLLECT_MODE_SWITCHED_ON,
+            this._set_btn_collect_as_started.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_collector.EVENT_ENDORSE_COLLECT_MODE_SWITCHED_OFF,
+            this._set_btn_collect_as_not_started.bind(this),
+            false)
+
+        window.addEventListener(
+            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
+            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
+            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
+            false);
+        window.addEventListener(
+            er_endorse_control.EVENT_ENDORSE_DELETED,
+            this.on_EVENT_ENDORSE_DELETED.bind(this),
+            false);
+
+        er_main_view._add_callback_on_click_mode_after_turn_on('er_endorse_mode_collect', this._on_click_mode_after_collect_turn_on.bind(this));
+
+        this._refresh();
+    },
+
+    _set_btn_collect_as_started : function() {
+        this.jq_btn_collect.addClass('started');
+    },
+    _set_btn_collect_as_not_started : function() {
+        this.jq_btn_collect.removeClass('started');
+    },
+
+    is_widget_visible : function() {
+        return this.jq_main.height() > 0;
+    },
+
+    _refresh : function(refresh_once_anyway) {
+        if(this.is_widget_visible() || refresh_once_anyway) {
+            this._refresh_button_collect_state();
+            this.jq_profiles_collected_value.text(er_endorse_queue.get_queue_length());
+        }
+
+        this.closure_refresh = this.closure_refresh ? this.closure_refresh : this._refresh.bind(this);
+        if(!refresh_once_anyway)
+            setTimeout(this.closure_refresh, ER_Widget_Endorse_Collect.CONST_REFRESH_STAT_TIMEOUT);
+    },
+    _refresh_button_collect_state : function() {
+        if(er_endorse_collector.get_mode_endorse_collect())
+            this._set_btn_collect_as_started();
+        else
+            this._set_btn_collect_as_not_started();
+    },
+
+    _on_click_btn_collect : function(event, start_any_way) {
+        if (!start_any_way && this.jq_btn_collect.hasClass('started')) {
+            er_endorse_collector.set_mode_endorse_collect(false);
+            this._set_btn_collect_as_not_started();
+        } else {
+            if(er_search_page_helper.is_search_page() || er_utils.is_my_connections_page()) {
+                er_endorse_collector.set_mode_on_and_tab_active();
+                er_endorse_collector.process();
+                this._set_btn_collect_as_started();
+            } else {
+                new ER_W_Go_To_Page({
+                    add_go_to_my_connections : true,
+                    add_go_to_1st : true,
+                    add_go_to_1st_sn : true,
+                });
+                er_main_view._info_popup_show('Go to search page and set 1st connections and other filters and click Collect ...or you can collect all 1st connections from My Connections page');
+            }
+        }
+    },
+    _on_click_btn_view_collected : function() {
+        var er_Widget_Endorse_Queue_Proc_Excl =
+            new ER_Widget_Endorse_Queue_Proc_Excl({
+                jq_parent : this.jq_main
+            });
+    },
+
+    _on_click_btn_lists_manager : function() {
+        new ER_W_List_Manager({
+            jq_parent : this.jq_main,
+            current_source_function_id : 'message_broadcast',
+            current_target_function_id : 'endorse_my_contacts',
+        })
+    },
+
+    _on_click_mode_after_collect_turn_on : function() {
+        this._on_click_btn_collect(null, true);
+    },
+    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
+        //this._refresh(true);
+    },
+    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
+        this._refresh(true);
+    },
+    on_EVENT_ENDORSE_DELETED : function(event) {
+        //this._refresh(true);
+    },
+};
+ER_Widget_Endorse_Collect.CONST_REFRESH_STAT_TIMEOUT = 5000;
+/**
+ * Created by erinsasha on 21/08/17.
+ */
+function ER_Widget_Endorse_Queue_Proc_Excl (options) {
+    if(!options)
+        options = {};
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+
+    this._build_widget();
+};
+
+ER_Widget_Endorse_Queue_Proc_Excl.prototype = {
+    listname_tech_to_user : {
+        'queue' : 'Queue',
+        'processed' : 'Endorsed',
+        'excluded' : 'Excluded',
+        'error' : 'Processed with Errors',
+    },
+    _build_widget : function() {
+        this.er_Widget_Queue_Proc_Excl = new ER_Widget_Queue_Proc_Excl({
+            jq_parent : this.jq_parent,
+            html_additional_main_class : 'ER_Widget_Endorse_Queue_Proc_Excl',
+
+            is_processed_enabled : true,
+            is_excluded_enabled : true,
+            is_error_enabled : true,
+
+            callback_get_queue_deferred : this.callback_get_queue_deferred.bind(this),
+            callback_get_processed_deferred : this.callback_get_processed_deferred.bind(this),
+            callback_get_excluded_deferred : this.callback_get_excluded_deferred.bind(this),
+            callback_get_error_deferred : this.callback_get_error_deferred.bind(this),
+
+            callback_move_ids_from_queue_to_excluded_deferred : this.callback_move_ids_from_queue_to_excluded_deferred.bind(this),
+            callback_move_ids_from_excluded_to_queue_deferred : this.callback_move_ids_from_excluded_to_queue_deferred.bind(this),
+            callback_move_ids_from_queue_to_processed_deferred : this.callback_move_ids_from_queue_to_processed_deferred.bind(this),
+            callback_move_ids_from_processed_to_queue_deferred : this.callback_move_ids_from_processed_to_queue_deferred.bind(this),
+            callback_move_ids_from_processed_to_excluded_deferred : this.callback_move_ids_from_processed_to_excluded_deferred.bind(this),
+            callback_move_ids_from_excluded_to_processed_deferred : this.callback_move_ids_from_excluded_to_processed_deferred.bind(this),
+            callback_move_ids_from_error_to_queue_deferred : this.callback_move_ids_from_error_to_queue_deferred.bind(this),
+
+            callback_get_dialog_message_move_from_queue_to_excluded : this.callback_get_dialog_message_move_from_queue_to_excluded.bind(this),
+            callback_get_dialog_message_move_from_excluded_to_queue : this.callback_get_dialog_message_move_from_excluded_to_queue.bind(this),
+            callback_get_dialog_message_move_from_queue_to_processed : this.callback_get_dialog_message_move_from_queue_to_processed.bind(this),
+            callback_get_dialog_message_move_from_processed_to_queue : this.callback_get_dialog_message_move_from_processed_to_queue.bind(this),
+            callback_get_dialog_message_move_from_processed_to_excluded : this.callback_get_dialog_message_move_from_processed_to_excluded.bind(this),
+            callback_get_dialog_message_move_from_excluded_to_processed : this.callback_get_dialog_message_move_from_excluded_to_processed.bind(this),
+            callback_get_dialog_message_move_from_error_to_queue : this.callback_get_dialog_message_move_from_error_to_queue.bind(this),
+
+            callback_get_dialog_message_delete_selected : this.callback_get_dialog_message_delete_selected.bind(this),
+            callback_delete_selected_deferred : this.callback_delete_selected_deferred.bind(this),
+        });
+    },
+
+    callback_get_queue_deferred : function() {
+        var deferred = $.Deferred();
+
+        var ids = er_endorse_queue.get_contacts_for_endorse();
+        deferred.resolve(ids);
+
+        return deferred.promise();
+    },
+    callback_get_processed_deferred : function() {
+        var deferred = $.Deferred();
+
+        var ids = er_endorsed_control.get_endorsed_ids();
+        deferred.resolve(ids);
+
+        return deferred.promise();
+    },
+    callback_get_excluded_deferred : function() {
+        var deferred = $.Deferred();
+
+        var ids = er_endorse_excluded.get_excluded_ids();
+        deferred.resolve(ids);
+
+        return deferred.promise();
+    },
+    callback_get_error_deferred : function() {
+        var deferred = $.Deferred();
+
+        var ids = er_endorse_error.get_error_ids();
+        deferred.resolve(ids);
+
+        return deferred.promise();
+    },
+
+    callback_move_ids_from_queue_to_excluded_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_queue_to_excluded(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_excluded_to_queue_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_excluded_to_queue(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_queue_to_processed_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_queue_to_endorsed(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_excluded_to_processed_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_excluded_to_endorsed(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_processed_to_queue_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_endorsed_to_queue(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_processed_to_excluded_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_endorsed_to_excluded(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+    callback_move_ids_from_error_to_queue_deferred : function(ids) {
+        var deferred = $.Deferred();
+        if (ids == null || ids.length == 0) {
+            deferred.resolve();
+            return deferred.promise();
+        }
+
+        er_endorse_mover.move_ids_from_error_to_queue(ids);
+        deferred.resolve();
+
+        return deferred.promise();
+    },
+
+    _generate_move_dialog_message : function(source_tech_name, target_tech_name) {
+        var selected = this.er_Widget_Queue_Proc_Excl.get_selected_count();
+
+        var source_user_name = this.listname_tech_to_user[source_tech_name];
+        var target_user_name = this.listname_tech_to_user[target_tech_name];
+
+        var message = 'Do you want to move '+selected + ' contact';
+        if(selected > 1)
+            message += 's';
+        message += ' from '+source_user_name+' to '+target_user_name;
+        return message;
+    },
+
+    callback_get_dialog_message_move_from_queue_to_excluded : function() {
+        return this._generate_move_dialog_message('queue', 'excluded');
+    },
+    callback_get_dialog_message_move_from_excluded_to_queue : function() {
+        return this._generate_move_dialog_message('excluded', 'queue');
+    },
+    callback_get_dialog_message_move_from_queue_to_processed : function() {
+        return this._generate_move_dialog_message('queue', 'processed');
+    },
+    callback_get_dialog_message_move_from_processed_to_queue : function() {
+        return this._generate_move_dialog_message('processed', 'queue');
+    },
+    callback_get_dialog_message_move_from_excluded_to_processed : function() {
+        return this._generate_move_dialog_message('excluded', 'processed');
+    },
+    callback_get_dialog_message_move_from_processed_to_excluded : function() {
+        return this._generate_move_dialog_message('processed', 'excluded');
+    },
+    callback_get_dialog_message_move_from_error_to_queue : function() {
+        return this._generate_move_dialog_message('error', 'queue');
+    },
+
+    callback_get_dialog_message_delete_selected : function(listname, count) {
+        var user_listname = this.listname_tech_to_user[listname];
+
+        if(count <= 0)
+            return 'Nothing selected';
+        var message = 'Delete '+count+' selected contact';
+        if(count > 1)
+            message += 's';
+        message += ' from '+user_listname+' ?';
+        return message;
+    },
+    callback_delete_selected_deferred : function(listname, ids) {
+        if(listname == 'queue') {
+            er_endorse_queue.delete_ids(ids);
+        } else if(listname == 'processed') {
+            er_endorsed_control.delete_ids(ids);
+        } else if(listname == 'excluded') {
+            er_endorse_excluded.delete_ids(ids);
+        } else if(listname == 'error') {
+            er_endorse_error.delete_ids(ids);
+        }
+
+        var deferred = $.Deferred();
+        deferred.resolve();
+        return deferred.promise();
+    }
+};
+/**
  * Created by erinsasha on 29/04/17.
  */
 
@@ -11495,11 +12757,11 @@ ERLH_License.static.check_license = function(license) {
     return result;
 };
 /**
- * Created by erinsasha on 24/05/17.
+ * Created by erinsasha on 30/04/17.
  */
 
-function ERLH_Order(obj) {
-    if(obj instanceof ERLH_Order)
+function ERLH_License_Key(obj) {
+    if(obj instanceof ERLH_License_Key)
         return obj;
 
     if(obj) {
@@ -11511,175 +12773,44 @@ function ERLH_Order(obj) {
     }
 }
 
-ERLH_Order.prototype = {
+ERLH_License_Key.prototype = {
 
 };
 
 
-ERLH_Order.static = {};
+ERLH_License_Key.static = {};
+ERLH_License_Key.static.source = {};
+ERLH_License_Key.static.source.server = 1;
+ERLH_License_Key.static.source.client = 2;
 
-ERLH_Order.static.status = {};
-ERLH_Order.static.status.registered = 1;
-ERLH_Order.static.status.deleted = -1;
-ERLH_Order.static.status.completed = 2;
+ERLH_License_Key.static.status = {};
+ERLH_License_Key.static.status.rejected = -1;
+ERLH_License_Key.static.status.active = 1;
 
-ERLH_Order.static.receipt_status = {};
-ERLH_Order.static.receipt_status.error = -1;
-ERLH_Order.static.receipt_status.not_sent = 0;
-ERLH_Order.static.receipt_status.ok = 1;
-
-ERLH_Order.static.method = {};
-ERLH_Order.static.method.paypal_invoice_personal = 1;
-ERLH_Order.static.method.paypal_invoice_organisation = 2;
-ERLH_Order.static.method.paypal_invoice_bank_card = 3;
-ERLH_Order.static.method.payoneer_invoice_personal = 4;
-ERLH_Order.static.method.payoneer_invoice_organisation = 5;
-ERLH_Order.static.method.payoneer_invoice_bank_card = 6;
-ERLH_Order.static.method.webmoney = 7;
-ERLH_Order.static.method.yandex_money = 8;
-ERLH_Order.static.method.platron_bank_card = 9;
-
-ERLH_Order.static.method_id_to_name = {
-    1 : 'Personal PayPal account',
-    2 : 'Organisation PayPal account',
-    3 : 'Credit/Debit card via PayPal',
-    4 : 'Personal Payoneer account',
-    5 : 'Organisation Payoneer account',
-    6 : 'Credit/Debit card via Payoneer',
-    7 : 'WebMoney',
-    8 : 'Yandex Money',
-    9 : 'Credit/Debit Bank Card',
-};
-
-/**
- *
- * @param options
- * @param options.without_payoneer
- * @param options.without_credit_debit_card_via_paypal
- * @param options.without_yandex
- * @param options.without_webmoney
- * @returns {{}}
- */
-ERLH_Order.static.get_method_ids_to_names = function(options) {
-    options = options ? options : {};
-    var keys = Object.keys(ERLH_Order.static.method_id_to_name);
+ERLH_License_Key.static.get_source_ids_to_names = function() {
     var result = {};
-    for(var i= 0, key; i<keys.length; i++) {
-        key = keys[i];
-        result[key] = ERLH_Order.static.method_id_to_name[key];
-    }
-
-    if(options.without_credit_debit_card_via_paypal) {
-        delete result[3];
-    }
-
-    if(options.without_payoneer) {
-        delete result[4];
-        delete result[5];
-        delete result[6];
-    }
-    if(options.without_webmoney) {
-        delete result[7];
-    }
-    if(options.without_yandex) {
-        delete result[8];
-    }
-    if(options.without_credit_debit_card_via_platron) {
-        delete result[9];
-    }
-
-    /*if(!erlh_curr_user.is_lh_admin())
-        delete result[9];*/
-
-    return result;
-};
-
-ERLH_Order.static.get_status_ids_to_names = function() {
-    var result = {};
-    var keys = Object.keys(ERLH_Order.static.status);
+    var keys = Object.keys(ERLH_License_Key.static.source);
 
     for(var i= 0, name, id; i<keys.length; i++) {
         name = keys[i];
-        id = ERLH_Order.static.status[name];
+        id = ERLH_License_Key.static.source[name];
         result[id] = name;
     }
 
     return result;
 };
 
-ERLH_Order.static.get_receipt_status_ids_to_names = function() {
+ERLH_License_Key.static.get_status_ids_to_names = function() {
     var result = {};
-    var keys = Object.keys(ERLH_Order.static.receipt_status);
+    var keys = Object.keys(ERLH_License_Key.static.status);
 
     for(var i= 0, name, id; i<keys.length; i++) {
         name = keys[i];
-        id = ERLH_Order.static.receipt_status[name];
+        id = ERLH_License_Key.static.status[name];
         result[id] = name;
     }
 
     return result;
-};
-
-ERLH_Order.static.pricing_id_to_amount = {
-    1 : 15,
-    3 : 40,
-    6 : 60,
-    12 : 99
-};
-
-ERLH_Order.static.quantity_range_to_discount = [
-    {q_start : 1, q_end : 9, discount : 0},
-    {q_start : 10, q_end : 19, discount : 10},
-    {q_start : 20, q_end : 49, discount : 20},
-    {q_start : 50, q_end : Number.MAX_SAFE_INTEGER, discount : 30},
-];
-
-ERLH_Order.static.get_discount_for_quantity = function(quantity) {
-    var arr = ERLH_Order.static.quantity_range_to_discount;
-    for(var i= 0, el; i<arr.length; i++) {
-        el = arr[i];
-        if(el.q_start <= quantity && el.q_end >= quantity)
-            return el.discount;
-    }
-    return 0;
-};
-
-ERLH_Order.server = {};
-
-ERLH_Order.server.updatestatus = function(order_id, new_status, callback) {
-    erlh_server.send(erlh_server.url.order.updatestatus,
-        {
-            order_id : order_id,
-            new_status : new_status,
-        },
-        function(err, response) {
-            callback(err, response);
-        }
-    );
-};
-
-ERLH_Order.server.executeorder = function(order_id, options, callback) {
-    erlh_server.send(erlh_server.url.order.executeorder,
-        {
-            order_id : order_id,
-            options : options,
-        },
-        function(err, response) {
-            callback(err, response);
-        }
-    );
-};
-
-ERLH_Order.server.sendinvoice = function(order_id, invoice_url, options, callback) {
-    erlh_server.send(erlh_server.url.order.sendinvoice,
-        {
-            order_id : order_id,
-            invoice_url : invoice_url,
-        },
-        function(err, response) {
-            callback(err, response);
-        }
-    );
 };
 /**
  * Created by erinsasha on 06/08/17.
@@ -11978,8 +13109,8 @@ var erlh_server = window.erlh_server || {
                 return null;
         },
 
-        server : 'http://localhost:8080',
-        //server : 'https://linkedhelper.com',
+        //server : 'http://localhost:8080',
+        server : 'https://linkedhelper.com',
         //server : 'https://miami.linkedhelper.com',
         url : {
             user : {
@@ -12039,62 +13170,6 @@ var erlh_server = window.erlh_server || {
             }
         }
     };
-/**
- * Created by erinsasha on 30/04/17.
- */
-
-function ERLH_License_Key(obj) {
-    if(obj instanceof ERLH_License_Key)
-        return obj;
-
-    if(obj) {
-        var obj_keys = Object.keys(obj);
-        for (var i = 0, key; i<obj_keys.length; i++) {
-            key = obj_keys[i];
-            this[key] = obj[key];
-        }
-    }
-}
-
-ERLH_License_Key.prototype = {
-
-};
-
-
-ERLH_License_Key.static = {};
-ERLH_License_Key.static.source = {};
-ERLH_License_Key.static.source.server = 1;
-ERLH_License_Key.static.source.client = 2;
-
-ERLH_License_Key.static.status = {};
-ERLH_License_Key.static.status.rejected = -1;
-ERLH_License_Key.static.status.active = 1;
-
-ERLH_License_Key.static.get_source_ids_to_names = function() {
-    var result = {};
-    var keys = Object.keys(ERLH_License_Key.static.source);
-
-    for(var i= 0, name, id; i<keys.length; i++) {
-        name = keys[i];
-        id = ERLH_License_Key.static.source[name];
-        result[id] = name;
-    }
-
-    return result;
-};
-
-ERLH_License_Key.static.get_status_ids_to_names = function() {
-    var result = {};
-    var keys = Object.keys(ERLH_License_Key.static.status);
-
-    for(var i= 0, name, id; i<keys.length; i++) {
-        name = keys[i];
-        id = ERLH_License_Key.static.status[name];
-        result[id] = name;
-    }
-
-    return result;
-};
 /**
  * Created by erinsasha on 13/04/17.
  */
@@ -12564,1266 +13639,191 @@ var erlh_utils = window.erlh_utils || {
         }
     };
 /**
- * Created by erinsasha on 22/08/17.
- */
-function ER_Widget_Endorse_Endorse (options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
-
-    this.build_main_view();
-};
-
-ER_Widget_Endorse_Endorse.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<div class="ER_Widget_Endorse_Endorse">';
-
-        html += this._HTML_build_contacts_for_endorse();
-        html += this._HTML_build_endorsed_total();
-        html += this._HTML_build_endorsed_in_current_period();
-        html += this._HTML_build_current_period_state();
-        html += this._HTML_build_next_period_start();
-
-        html += this._HTML_build_endorse_period();
-        html += this._HTML_build_endorse_limit();
-
-        html += this._HTML_build_endorse_mode_cont();
-
-        html += this._HTML_build_btn_begin_endorse();
-
-        html += '<button class="btn_timeout_settings">Timeout settings</button>';
-
-        html += '</div>';
-        return html;
-    },
-
-    _HTML_build_contacts_for_endorse : function() {
-        var value = er_endorse_queue.get_queue_length();
-
-        return '<div class="stat_cont contacts_for_endorse"><span class="title label"></span><span class="er_contacts_for_endorse value">'+value+'</span></div>';
-    },
-    _HTML_build_endorsed_total : function() {
-        var count_sent = er_endorsed_control.get_endorsed_counter();
-
-        return '<div class="stat_cont endorsed_total"><span class="title label"></span><span class="er_endorsed_total value">'+count_sent+'</span></div>';
-    },
-    _HTML_build_endorsed_in_current_period : function() {
-        var count_sent = er_endorse_endorser.get_endorsed_in_current_period();
-
-        return '<div class="stat_cont endorsed_in_current_period"><span class="title label"></span><span class="er_endorsed_in_current_period value">'+count_sent+'</span></div>';
-    },
-    _HTML_build_current_period_state : function() {
-        var state = er_endorse_endorser.get_current_period_state();
-
-        return '<div class="stat_cont current_period_state"><span class="title label"></span><span class="er_current_period_state value">'+state+'</span></div>';
-    },
-    _HTML_build_next_period_start : function() {
-        var date = er_endorse_endorser.get_next_period_start();
-        var hidden = 'hidden';
-
-        if (date != null) {
-            hidden = '';
-            date = er_utils.datetimeJSToUser(date);
-        }
-        return '<div class="stat_cont next_period_start '+hidden+'"><span class="title label"></span><span class="er_next_period_start value">'+date+'</span></div>';
-    },
-
-
-    _HTML_build_endorse_limit : function() {
-        var html = '<div class="endorse_limit_cont er_label_input_cont">';
-        html += '<span class="label"></span>';
-
-        var limit = er_endorse_endorser.get_endorsed_limit_per_period();
-
-        html += '<input class="endorse_limit" type="text" value="'+limit+'">';
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_endorse_period : function() {
-        var html = '<div class="endorse_period_cont er_label_input_cont">';
-        html += '<span class="label"></span>';
-
-        var period = er_endorse_endorser.get_endorse_period_hours_between();
-
-        html += '<input class="endorse_period" type="text" value="'+period+'">';
-        html += '</div>';
-        return html;
-    },
-
-    _HTML_build_btn_begin_endorse : function() {
-        var btn_begin_endorse_started = er_endorse_endorser.is_endorser_switched_on() ? 'started' : '';
-        return '<button class="btn_begin_endorse '+btn_begin_endorse_started+'"></button>';
-    },
-
-    _HTML_build_endorse_mode_cont : function() {
-        return '<div class="cont_endorse_mode_cont"></div>';
-    },
-
-
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-        this._add_handlers_for_inputs();
-        this._add_handlers_for_stats();
-        this._add_handlers_for_buttons();
-
-        er_main_view._add_callback_on_click_mode_after_turn_on('er_new_endorse_mode', this._on_click_mode_after_turn_on.bind(this));
-
-        window.addEventListener(
-            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
-            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
-            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ENDORSE_DELETED,
-            this.on_EVENT_ENDORSE_DELETED.bind(this),
-            false);
-
-        this.closure_refresh = this._refresh.bind(this);
-        this._refresh();
-    },
-    _add_handlers_for_inputs : function() {
-        this.jq_input_endorse_period = this.jq_main.find('.endorse_period');
-        this.jq_input_endorse_period.change(this._on_change_input_endorse_period.bind(this));
-
-        this.jq_input_endorse_limit = this.jq_main.find('.endorse_limit');
-        this.jq_input_endorse_limit.change(this._on_change_input_endorse_limit.bind(this));
-
-        this.jq_main.find('.endorse_mode_first_limit').change(this._on_change_input_endorse_mode_first_limit.bind(this));
-
-        this.w_endorse_mode_toggle = new ER_W_Endorse_Mode_Toggle({jq_parent : this.jq_main.find('.cont_endorse_mode_cont')});
-    },
-    _add_handlers_for_stats : function() {
-        this.jq_contacts_for_endorse = this.jq_main.find('.er_contacts_for_endorse');
-        this.jq_endorsed_total = this.jq_main.find('.er_endorsed_total');
-        this.jq_endorsed_in_current_period = this.jq_main.find('.er_endorsed_in_current_period');
-        this.jq_current_period_state = this.jq_main.find('.er_current_period_state');
-        this.jq_next_period_start_cont = this.jq_main.find('.stat_cont.next_period_start');
-        this.jq_next_period_start = this.jq_next_period_start_cont.find('.er_next_period_start');
-    },
-    _add_handlers_for_buttons : function() {
-        this.jq_btn_begin_endorse = this.jq_main.find('.btn_begin_endorse');
-        this.jq_btn_begin_endorse.click(this._on_click_btn_begin_endorse.bind(this));
-        this.jq_main.find('button.btn_timeout_settings').click(this._on_click_btn_timeout_settings.bind(this));
-    },
-
-    _refresh : function(refresh_once_anyway) {
-        if(this.is_widget_visible() || refresh_once_anyway) {
-            this._refresh_contacts_for_endorse();
-            this.jq_endorsed_total.text(er_endorsed_control.get_endorsed_counter());
-            this.jq_endorsed_in_current_period.text(er_endorse_endorser.get_endorsed_in_current_period());
-            this.jq_current_period_state.text(er_endorse_endorser.get_current_period_state());
-            this._refresh_next_period_start();
-            this._refresh_btn_begin_endorse();
-        }
-        if(!refresh_once_anyway)
-            setTimeout(this.closure_refresh, this.CONST_REFRESH_STAT_TIMEOUT);
-    },
-    _refresh_contacts_for_endorse : function() {
-        var value = er_endorse_queue.get_queue_length();
-
-        this.jq_contacts_for_endorse.text(value);
-    },
-    _refresh_next_period_start : function() {
-        var date = er_endorse_endorser.get_next_period_start();
-        if (date) {
-            this.jq_next_period_start_cont.removeClass('hidden');
-            this.jq_next_period_start.text(er_utils.datetimeJSToUser(date));
-        } else {
-            this.jq_next_period_start_cont.addClass('hidden');
-        }
-    },
-    _refresh_btn_begin_endorse : function() {
-        if (er_endorse_endorser.is_endorser_switched_on()) {
-            this.jq_btn_begin_endorse.addClass('started');
-        } else {
-            this.jq_btn_begin_endorse.removeClass('started');
-        }
-    },
-
-    _check_limits_and_warn : function() {
-        if(er_endorse_endorser.is_limits_are_safe()) {
-            this.jq_input_endorse_period.removeClass('warning');
-            this.jq_input_endorse_limit.removeClass('warning');
-        } else {
-            this.jq_input_endorse_period.addClass('warning');
-            this.jq_input_endorse_limit.addClass('warning');
-
-            er_main_view._info_popup_show(er_translator.get_text('er_endorse_view', 'messages', 'limits_warning', er_gen_settings.get_current_language_id()));
-        }
-    },
-
-    is_widget_visible : function() {
-        return this.jq_main.height() > 0;
-    },
-
-    _on_change_input_endorse_period : function(event) {
-        var jqInput = $(event.target);
-        jqInput.val(er_endorse_endorser.set_endorse_period_hours_between(jqInput.val()));
-        this._check_limits_and_warn();
-    },
-    _on_change_input_endorse_limit : function(event) {
-        var jqInput = $(event.target);
-        jqInput.val(er_endorse_endorser.set_endorsed_limit_per_period(jqInput.val()));
-        this._check_limits_and_warn();
-    },
-    _on_change_input_endorse_mode_first_limit : function(event) {
-        var jqInput = $(event.target);
-        jqInput.val(er_endorse_endorser.set_max_endorse_skills_count(jqInput.val()));
-    },
-    _on_click_btn_begin_endorse : function(event, start_any_way) {
-        if (!start_any_way && this.jq_btn_begin_endorse.hasClass('started')) {
-            localStorage.er_new_endorse_mode = 'false';
-            er_endorse_endorser.tab_delete_mode();
-            this.jq_btn_begin_endorse.removeClass('started');
-        } else {
-            this.jq_btn_begin_endorse.addClass('started');
-            er_endorse_endorser.tab_add_mode();
-            er_endorse_endorser.begin_endorse_all_contacts();
-        }
-    },
-    _on_click_btn_timeout_settings : function() {
-        new ER_W_Endorse_Timeout_Settings({});
-    },
-    _on_click_mode_after_turn_on : function() {
-        var contacts_for_endorse = er_endorse_queue.get_queue_length();
-
-        var that = this;
-
-        if (contacts_for_endorse > 0) {
-            er_main_view.show_yes_no_dialog(
-                er_translator.get_text('er_endorse_view', 'messages', 'need_begin_endorse', er_gen_settings.get_current_language_id()),
-                function() {
-                    that._on_click_btn_begin_endorse(null, true);
-                }
-            );
-        } else {
-            er_main_view.show_yes_no_dialog('Your queue is empty! Please, collect contact first');
-            /*er_main_view.show_yes_no_dialog(
-                er_translator.get_text('er_endorse_view', 'messages', 'need_begin_collect_for_endorse', er_gen_settings.get_current_language_id()),
-                function() {
-                    that._on_click_btn_collect(null, true);
-                }
-            );*/
-        }
-    },
-    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
-        //this._refresh(true);
-    },
-    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
-        this._refresh(true);
-    },
-    on_EVENT_ENDORSE_DELETED : function(event) {
-        //this._refresh(true);
-    },
-};
-ER_Widget_Endorse_Endorse.CONST_REFRESH_STAT_TIMEOUT = 5000;
-/**
- * Created by erinsasha on 21/08/17.
+ * Created by erinsasha on 24/05/17.
  */
 
-function ER_Widget_Delete_Endorse(options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
+function ERLH_Order(obj) {
+    if(obj instanceof ERLH_Order)
+        return obj;
 
-    this.build_main_view();
-};
-
-ER_Widget_Delete_Endorse.prototype = {
-    _HTML_build_main_view : function() {
-        var er_inactive = er_endorse_control.is_default_endorse_active() ? 'er_inactive' : '';
-        return '<button class="ER_Widget_Delete_Endorse danger '+er_inactive+'">Delete current list</button>';
-    },
-    _add_handlers : function() {
-        window.addEventListener(
-            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
-            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
-            false);
-
-        this.jq_main.click(this.on_click_button.bind(this));
-    },
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    on_click_button : function() {
-        if(this.jq_main.hasClass('er_inactive'))
-            return;
-
-        er_main_view.show_yes_no_dialog(
-            'Delete list "'+er_endorse_control.get_active_list_id()+'"?',
-            this.on_click_yes_delete_list.bind(this)
-        );
-    },
-    on_click_yes_delete_list : function() {
-        er_endorse_control.delete_list(er_endorse_control.get_active_list_id());
-    },
-    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
-        if(er_endorse_control.is_default_endorse_active()) {
-            this.jq_main.addClass('er_inactive');
-        } else {
-            this.jq_main.removeClass('er_inactive');
+    if(obj) {
+        var obj_keys = Object.keys(obj);
+        for (var i = 0, key; i<obj_keys.length; i++) {
+            key = obj_keys[i];
+            this[key] = obj[key];
         }
-    },
-};
-
-/**
- * Created by erinsasha on 22/08/17.
- */
-//ER_W_Endorse_Mode_Toggle
-
-/**
- *
- * @param options
- * @param options.jq_parent
- * @constructor
- */
-function ER_W_Endorse_Mode_Toggle(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-
-    this._process();
-}
-
-ER_W_Endorse_Mode_Toggle.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Endorse_Mode_Toggle endorse_mode_cont">';
-
-        html += this._HTML_build_endorse_mode_toggle();
-
-        html += '<div class="prefs_cont">';
-        html += this._HTML_build_endorse_mode_specified();
-        html += this._HTML_build_endorse_mode_first();
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    },
-    _HTML_build_endorse_mode_toggle : function() {
-        var setAll = '', setFirst = '', setSpecified ='';
-
-        var endorse_mode = er_endorse_endorser.get_endorse_mode();
-
-        switch (endorse_mode) {
-            case er_endorse_endorser.CONST_ENDORSE_MODE_ALL          : setAll = 'set'; break;
-            case er_endorse_endorser.CONST_ENDORSE_MODE_FIRST        : setFirst = 'set'; break;
-            case er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED    : setSpecified = 'set'; break;
-        }
-
-        var html = '<div class="b2ctoggle endorse_mode_toggle">';
-        html += '<span class="label"></span>';
-        html += '<span class="values">' +
-            '<span class="togglevalue all left '+setAll+'" data-val="all"></span>' +
-            '<span class="togglevalue first '+setFirst+'" data-val="first"></span>' +
-            '<span class="togglevalue specified right '+setSpecified+'" data-val="specified"></span>' +
-            '</span>';
-        html += '</div>';
-
-        return html;
-    },
-    _HTML_build_endorse_mode_specified : function() {
-        var hidden = '';
-        if (er_endorse_endorser.get_endorse_mode() != er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED)
-            hidden = 'hidden';
-
-        return '<div class="tags_cont endorse_skills_cont '+hidden+'"></div>';
-    },
-    _HTML_build_endorse_mode_first : function() {
-        var hidden = '';
-        if (er_endorse_endorser.get_endorse_mode() != er_endorse_endorser.CONST_ENDORSE_MODE_FIRST)
-            hidden = 'hidden';
-
-        var html = '<div class="endorse_mode_first_cont er_label_input_cont '+hidden+'">';
-        html += '<span class="label"></span>';
-
-        var limit = er_endorse_endorser.get_max_endorse_skills_count();
-
-        html += '<input class="endorse_mode_first_limit" type="text" value="'+limit+'">';
-        html += '</div>';
-        return html;
-    },
-
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        this._add_handlers();
-    },
-    _add_handlers : function() {
-        this.jq_endorse_mode_toggle = this.jq_main.find('.endorse_mode_toggle').b2ctoggle({
-            multiMode : false,
-            onValueChange : this._on_endorse_mode_toggle_state_change.bind(this)
-        });
-
-        this.jq_endorse_mode_first_cont = this.jq_main.find('.endorse_mode_first_cont');
-        
-        this._add_handlers_endorse_skills_cont();
-    },
-    _add_handlers_endorse_skills_cont : function() {
-        this.jq_endorse_skills_cont = this.jq_main.find('.endorse_skills_cont');
-        
-        var skills = er_endorse_endorser.get_skill_for_endorse();
-        this.jq_endorse_skills_cont.b2ctags({
-            tags : skills,
-            placeholder : 'Input skill and press Enter',
-            unsetAllEnabled : false,
-            onChanged : this._on_endorse_skills_cont_changed.bind(this)
-        });
-    },
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    _on_endorse_mode_toggle_state_change : function(states) {
-        if(this.jq_endorse_mode_toggle.b2ctoggle('isset', 'all')) {
-            this.jq_endorse_mode_first_cont.addClass('hidden');
-            this.jq_endorse_skills_cont.addClass('hidden');
-            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_ALL);
-        } else if (this.jq_endorse_mode_toggle.b2ctoggle('isset', 'first')) {
-            this.jq_endorse_mode_first_cont.removeClass('hidden');
-            this.jq_endorse_skills_cont.addClass('hidden');
-            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_FIRST);
-        } else if (this.jq_endorse_mode_toggle.b2ctoggle('isset', 'specified')) {
-            this.jq_endorse_mode_first_cont.addClass('hidden');
-            this.jq_endorse_skills_cont.removeClass('hidden');
-            er_endorse_endorser.set_endorse_mode(er_endorse_endorser.CONST_ENDORSE_MODE_SPECIFIED);
-        }
-    },
-    _on_endorse_skills_cont_changed : function(skills) {
-        er_endorse_endorser.set_skill_for_endorse(skills);
-    },
-};
-/**
- * Created by erinsasha on 23/08/17.
- */
-function ER_Widget_Endorse_Export (options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
-
-    this.build_main_view();
-};
-
-ER_Widget_Endorse_Export.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<div class="ER_Widget_Endorse_Export">';
-
-        html += this._HTML_build_delimiter_selector();
-        html += '<button class="btn_export_file"></button>';
-        html += '<a class="help er_blog" target="_blank" href="https://medium.com/linked-helper/how-to-import-csv-file-into-ms-excel-b4aee2f30375?source=---------1">Read How to Import CSV file into MS Excel</a>';
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_delimiter_selector : function() {
-        var html = '<div class="delimiter_selector_cont er_label_input_cont">';
-
-        html += '<span class="label">Delimiter</span>';
-
-        html += '<select class="select_delimiter">';
-
-        html += '<option value="," selected>, - Google Sheets</option>';
-        html += '<option value=";">; - Microsoft Excel</option>';
-
-        html += '</select>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-        this.jq_btn_export_file = this.jq_main.find('.btn_export_file');
-        this.jq_btn_export_file.click(this._on_btn_export_file_click.bind(this));
-
-        this.jq_select_delimiter = this.jq_main.find('.select_delimiter');
-    },
-
-
-
-    is_widget_visible : function() {
-        return this.jq_main.height() > 0;
-    },
-
-    _on_btn_export_file_click : function() {
-        if(this.jq_btn_export_file.hasClass('started'))
-            return;
-
-        var that = this;
-
-        var evtPK = document.createEvent("CustomEvent");
-        evtPK.initCustomEvent('EVENT_IS_LK_VALID', true, true,
-            function(result) {
-                if (result) {
-                    that.jq_btn_export_file.addClass('started');
-
-                    var jq_option = that.jq_select_delimiter.find('option:selected');
-                    var delimiter = jq_option.attr('value');
-
-                    er_profiles_common_csv.delimiter = delimiter;
-                    er_profiles_common_csv.generate_csv_file_for_ids(er_endorsed_control.get_endorsed_ids())
-                        .then(function() {
-                            that.jq_btn_export_file.removeClass('started');
-                        });
-
-                } else {
-                    //that._on_license_not_valid();
-                }
-            }
-        );
-        window.dispatchEvent(evtPK);
-    },
-};
-/**
- * Created by erinsasha on 21/08/17.
- */
-function ER_Widget_Endorse_Collect (options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
-
-    this.build_main_view();
-};
-
-ER_Widget_Endorse_Collect.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<div class="ER_Widget_Endorse_Collect">';
-
-        html += this._HTML_build_list_select_cont();
-        html += this._HTML_build_btn_collect();
-        html += this._HTML_build_list_stats();
-        html += '<button class="view_collected">View collected</button>';
-        html += '<button class="btn_lists_manager">Open lists manager</button>';
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_list_select_cont : function() {
-        var html = '<div class="wrapper_list_select_cont">';
-
-        html += '<span class="label">List</span>';
-
-        html += '</div>';
-
-        return html;
-    },
-    _HTML_build_btn_collect : function() {
-        var started = er_endorse_collector.get_mode_endorse_collect() ? 'started' : '';
-        return '<button class="collect '+started+'"></button>';
-    },
-    _HTML_build_list_stats : function() {
-        var html = '<div class="list_stats_cont">';
-
-        html += this._HTML_build_profiles_collected();
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_profiles_collected : function() {
-        return '<div class="stat_cont profiles_collected_cont"><span class="title label">Already collected</span><span class="er_count_new value">0</span></div>';
-    },
-
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-        this.er_Widget_Endorse_Selector = new ER_Widget_Endorse_Selector({
-            jq_parent : this.jq_main.find('.wrapper_list_select_cont')
-        });
-
-        this.er_Widget_Delete_Endorse = new ER_Widget_Delete_Endorse({
-            jq_parent : this.jq_main
-        });
-
-        this.jq_btn_collect = this.jq_main.find('button.collect');
-        this.jq_btn_collect.click(this._on_click_btn_collect.bind(this));
-
-        this.jq_btn_view_collected = this.jq_main.find('button.view_collected');
-        this.jq_btn_view_collected.click(this._on_click_btn_view_collected.bind(this));
-
-        this.jq_main.find('.btn_lists_manager').click(this._on_click_btn_lists_manager.bind(this));
-
-        this.jq_profiles_collected_value = this.jq_main.find('.profiles_collected_cont .value');
-
-        window.addEventListener(
-            er_endorse_collector.EVENT_ENDORSE_COLLECT_MODE_SWITCHED_ON,
-            this._set_btn_collect_as_started.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_collector.EVENT_ENDORSE_COLLECT_MODE_SWITCHED_OFF,
-            this._set_btn_collect_as_not_started.bind(this),
-            false)
-
-        window.addEventListener(
-            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
-            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
-            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ENDORSE_DELETED,
-            this.on_EVENT_ENDORSE_DELETED.bind(this),
-            false);
-
-        er_main_view._add_callback_on_click_mode_after_turn_on('er_endorse_mode_collect', this._on_click_mode_after_collect_turn_on.bind(this));
-
-        this._refresh();
-    },
-
-    _set_btn_collect_as_started : function() {
-        this.jq_btn_collect.addClass('started');
-    },
-    _set_btn_collect_as_not_started : function() {
-        this.jq_btn_collect.removeClass('started');
-    },
-
-    is_widget_visible : function() {
-        return this.jq_main.height() > 0;
-    },
-
-    _refresh : function(refresh_once_anyway) {
-        if(this.is_widget_visible() || refresh_once_anyway) {
-            this._refresh_button_collect_state();
-            this.jq_profiles_collected_value.text(er_endorse_queue.get_queue_length());
-        }
-
-        this.closure_refresh = this.closure_refresh ? this.closure_refresh : this._refresh.bind(this);
-        if(!refresh_once_anyway)
-            setTimeout(this.closure_refresh, ER_Widget_Endorse_Collect.CONST_REFRESH_STAT_TIMEOUT);
-    },
-    _refresh_button_collect_state : function() {
-        if(er_endorse_collector.get_mode_endorse_collect())
-            this._set_btn_collect_as_started();
-        else
-            this._set_btn_collect_as_not_started();
-    },
-
-    _on_click_btn_collect : function(event, start_any_way) {
-        if (!start_any_way && this.jq_btn_collect.hasClass('started')) {
-            er_endorse_collector.set_mode_endorse_collect(false);
-            this._set_btn_collect_as_not_started();
-        } else {
-            if(er_search_page_helper.is_search_page() || er_utils.is_my_connections_page()) {
-                er_endorse_collector.set_mode_on_and_tab_active();
-                er_endorse_collector.process();
-                this._set_btn_collect_as_started();
-            } else {
-                new ER_W_Go_To_Page({
-                    add_go_to_my_connections : true,
-                    add_go_to_1st : true,
-                    add_go_to_1st_sn : true,
-                });
-                er_main_view._info_popup_show('Go to search page and set 1st connections and other filters and click Collect ...or you can collect all 1st connections from My Connections page');
-            }
-        }
-    },
-    _on_click_btn_view_collected : function() {
-        var er_Widget_Endorse_Queue_Proc_Excl =
-            new ER_Widget_Endorse_Queue_Proc_Excl({
-                jq_parent : this.jq_main
-            });
-    },
-
-    _on_click_btn_lists_manager : function() {
-        new ER_W_List_Manager({
-            jq_parent : this.jq_main,
-            current_source_function_id : 'message_broadcast',
-            current_target_function_id : 'endorse_my_contacts',
-        })
-    },
-
-    _on_click_mode_after_collect_turn_on : function() {
-        this._on_click_btn_collect(null, true);
-    },
-    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
-        //this._refresh(true);
-    },
-    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
-        this._refresh(true);
-    },
-    on_EVENT_ENDORSE_DELETED : function(event) {
-        //this._refresh(true);
-    },
-};
-ER_Widget_Endorse_Collect.CONST_REFRESH_STAT_TIMEOUT = 5000;
-/**
- * Created by erinsasha on 21/08/17.
- */
-
-/**
- *
- * @param options
- * @constructor
- */
-function ER_Widget_Endorse_Selector(options) {
-    options = options || {};
-    this.options = options;
-
-    this.jq_parent = options.jq_parent;
-    this.build_main_view();
-};
-
-ER_Widget_Endorse_Selector.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<span class="ER_Widget_Endorse_Selector">';
-
-        html += '<select class="select_endorse_list">';
-
-        html += '<option value="'+ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID+'">...CREATE NEW</option>';
-
-
-        var active_list_id = er_endorse_control.get_active_list_id();
-        var list = er_endorse_control.get_all_lists_ids();
-
-        for(var i=0, current_list_id; i < list.length; i++) {
-            current_list_id = list[i];
-            html += this._HTML_build_select_option(current_list_id, active_list_id == current_list_id);
-        }
-
-        html += '</select>';
-
-        html += '</span>';
-
-        return html;
-    },
-    _HTML_build_select_option : function(id, is_selected) {
-        var selected = is_selected ? 'selected' : '';
-        return '<option value="'+id.replace(/"/g,'&quot;')+'" '+selected+'>'+id.replace(/"/g,'&quot;')+'</option>';
-    },
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-        this.jq_select = this.jq_main.find('.select_endorse_list');
-        this.jq_select.change(this._on_change_select_endorse_list.bind(this));
-
-        window.addEventListener(
-            er_endorse_control.EVENT_NEW_ENDORSE_CREATED,
-            this.on_EVENT_NEW_ENDORSE_CREATED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ACTIVE_ENDORSE_SWITCHED,
-            this.on_EVENT_ACTIVE_ENDORSE_SWITCHED.bind(this),
-            false);
-        window.addEventListener(
-            er_endorse_control.EVENT_ENDORSE_DELETED,
-            this.on_EVENT_ENDORSE_DELETED.bind(this),
-            false);
-    },
-
-    _add_new_list_to_selector : function(id) {
-        if (this._is_select_option_created(id))
-            return;
-
-        var is_selected = er_endorse_control.get_active_list_id() == id;
-
-        var option = this._HTML_build_select_option(id, is_selected);
-        this.jq_select.append($(option));
-    },
-
-    _set_selected_list : function(id) {
-        if(!this._is_select_option_created(id)) {
-            this._add_new_list_to_selector(id);
-        }
-
-        this.jq_select.val(id);
-    },
-    _is_select_option_created : function(id) {
-        return this._get_select_option(id).length == 1;
-    },
-    _get_select_option : function(id) {
-        return this.jq_select.find('option[value="'+id.replace(/"/g,'\\\"')+'"]');
-    },
-    _delete_select_option : function(id) {
-        this._get_select_option(id).remove();
-    },
-
-    _show_create_list_dialog : function() {
-        var er_Widget_New_Endorse_List = new ER_Widget_New_Endorse_List({
-            jq_parent : this.jq_main
-        });
-    },
-    _on_change_select_endorse_list : function(event) {
-        var jq_option = this.jq_select.find('option:selected');
-        var list_id = jq_option.attr('value');
-        if (list_id == ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID) {
-            this._show_create_list_dialog();
-            this.jq_select.val(er_endorse_control.get_active_list_id());
-        } else {
-            er_endorse_control.set_active_list_id(list_id);
-        }
-    },
-    on_EVENT_NEW_ENDORSE_CREATED : function(event) {
-        var id = event.detail.id;
-        this._add_new_list_to_selector(id);
-    },
-    on_EVENT_ACTIVE_ENDORSE_SWITCHED : function(event) {
-        var endorse = event.detail;
-        this._set_selected_list(endorse.id);
-    },
-    on_EVENT_ENDORSE_DELETED : function(event) {
-        var id = event.detail;
-        this._delete_select_option(id);
-    },
-};
-ER_Widget_Endorse_Selector.const = {};
-ER_Widget_Endorse_Selector.const.CONST_SELECTION_CREATE_MEW_ID = '__create_new_endorse_list__';
-/**
- * Created by erinsasha on 22/08/17.
- */
-er_endorse_view = window.er_endorse_view || {
-        type : 'er_endorse',
-        tittle : 'Endorse my contacts',
-
-        jq_main : null,
-
-        init_main : function() {
-            if (this.inited)
-                return;
-
-            this.jq_main = $(this._HTML_build_main());
-
-            this._add_handlers();
-            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-
-            if (er_endorse_endorser.is_mode_on_and_tab_active() || er_endorse_collector.is_mode_on_and_tab_active())
-                er_main_view.show_settings(this.type);
-
-            this.inited = true;
-        },
-        _HTML_build_main : function() {
-            var html = '<div class="er_sub_view '+this.type+'">';
-
-            html += this._HTML_build_tabs_pannel();
-
-            html += this._HTML_build_content_collect();
-            html += this._HTML_build_content_endorse();
-            html += this._HTML_build_content_export();
-
-            html += '</div>';
-            return html;
-        },
-
-        _HTML_build_tabs_pannel : function() {
-            var html = '<div class="tabs_pannel">';
-
-            var collect_set = 'set', endorse_set = '';
-            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active()) {
-                collect_set = '';
-                endorse_set = 'set';
-            }
-
-            html += '<span class="tab '+collect_set+'" data-tab="collect">Collect</span>';
-            html += '<span class="tab '+endorse_set+'" data-tab="endorse">Endorse</span>';
-            html += '<span class="tab" data-tab="export">Export</span>';
-
-            html += '</div>';
-
-            return html;
-        },
-        _HTML_build_content_collect : function() {
-            var collect_set = 'set';
-            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active())
-                collect_set = '';
-
-            var html = '<div class="content '+collect_set+'" data-type="collect">';
-            html += '</div>';
-            return html;
-        },
-        _HTML_build_content_endorse : function() {
-            var endorse_set = '';
-
-            if(er_utils.is_profile_page() && er_endorse_endorser.is_mode_on_and_tab_active())
-                endorse_set = 'set';
-
-            var html = '<div class="content '+endorse_set+'" data-type="endorse">';
-            html += '</div>';
-            return html;
-        },
-        _HTML_build_content_export : function() {
-            var html = '<div class="content" data-type="export">';
-            html += '</div>';
-            return html;
-        },
-
-
-        _add_handlers : function() {
-            new ER_Widget_How_To({
-                jq_parent : this.jq_main,
-                links : [ER_Widget_How_To.links.er_endorse_view]
-            });
-
-            this.jq_main.children('.tabs_pannel').children('.tab').click(this._on_click_tab.bind(this));
-
-            var jq_content_collect = this.jq_main.find('.content[data-type=collect]');
-            var jq_content_endorse = this.jq_main.find('.content[data-type=endorse]');
-            var jq_content_export = this.jq_main.find('.content[data-type=export]');
-
-            this.w_collect = new ER_Widget_Endorse_Collect({jq_parent : jq_content_collect});
-            this.w_endorse = new ER_Widget_Endorse_Endorse({jq_parent : jq_content_endorse});
-            this.w_export = new ER_Widget_Endorse_Export({jq_parent : jq_content_export});
-        },
-
-        is_widget_visible : function() {
-            return this.jq_main.height() > 0;
-        },
-
-        _on_main_view_ready_for_sub_view : function() {
-            this.init_main();
-        },
-        _on_click_tab : function(event) {
-            var jq_tab = $(event.target);
-            if(jq_tab.hasClass('set'))
-                return;
-
-            jq_tab.siblings('.tab.set').removeClass('set');
-            this.jq_main.children('.content.set').removeClass('set');
-
-            jq_tab.addClass('set');
-            this.jq_main.children('.content[data-type='+jq_tab.attr('data-tab')+']').addClass('set');
-        },
-
-    };
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_endorse_view._on_main_view_ready_for_sub_view() });
-/**
- * Created by erinsasha on 11/08/17.
- */
-
-/**
- *
- * @param options
- * @param options.jq_parent
- * @constructor
- */
-function ER_W_Endorse_Timeout_Settings(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.jq_parent = options.jq_parent;
-    this.options = options;
-
-    this._process();
-}
-
-ER_W_Endorse_Timeout_Settings.prototype = {
-    _process : function() {
-        this.w_timeout_settings = new ER_W_Timeout_Settings({
-            header : 'Timeouts for Endorse my contacts',
-            timeouts_names : er_endorse_timeouts.const_timeouts_names,
-            timeouts : er_endorse_timeouts.get_timeouts(),
-            fast_timeouts : er_endorse_timeouts.const_timeout_fast,
-            safe_timeouts : er_endorse_timeouts.const_timeout_safe,
-            jq_parent : this.jq_parent,
-            callback_save_settings : er_endorse_timeouts.save_timeouts_from_object.bind(er_endorse_timeouts)
-        });
-    },
-};
-/**
- * Created by erinsasha on 21/08/17.
- */
-function ER_Widget_New_Endorse_List (options) {
-    this.options = options;
-
-    this.er_Widget_New_Something = new ER_Widget_New_Something({
-        callback_on_create : this.callback_on_create.bind(this),
-        html_main_class : 'ER_Widget_New_Endorse_List',
-        input_placeholder : 'List name',
-        jq_parent : options.jq_parent
-    });
-
-    this.er_Widget_New_Something.build_main_view();
-};
-
-ER_Widget_New_Endorse_List.prototype = {
-    callback_on_create : function(name) {
-        if(er_endorse_control.is_list_with_id_exists(name)) {
-            this.er_Widget_New_Something.info_popup_show('List with such name already exists');
-        } else {
-            var that = this;
-            er_endorse_control.create_new_endorse_as_active(name)
-                .then(function() {
-                    that.er_Widget_New_Something.close();
-                });
-        }
-    },
-};
-/**
- * Created by erinsasha on 21/08/17.
- */
-function ER_Widget_Endorse_Queue_Proc_Excl (options) {
-    if(!options)
-        options = {};
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-
-    this._build_widget();
-};
-
-ER_Widget_Endorse_Queue_Proc_Excl.prototype = {
-    listname_tech_to_user : {
-        'queue' : 'Queue',
-        'processed' : 'Endorsed',
-        'excluded' : 'Excluded',
-        'error' : 'Processed with Errors',
-    },
-    _build_widget : function() {
-        this.er_Widget_Queue_Proc_Excl = new ER_Widget_Queue_Proc_Excl({
-            jq_parent : this.jq_parent,
-            html_additional_main_class : 'ER_Widget_Endorse_Queue_Proc_Excl',
-
-            is_processed_enabled : true,
-            is_excluded_enabled : true,
-            is_error_enabled : true,
-
-            callback_get_queue_deferred : this.callback_get_queue_deferred.bind(this),
-            callback_get_processed_deferred : this.callback_get_processed_deferred.bind(this),
-            callback_get_excluded_deferred : this.callback_get_excluded_deferred.bind(this),
-            callback_get_error_deferred : this.callback_get_error_deferred.bind(this),
-
-            callback_move_ids_from_queue_to_excluded_deferred : this.callback_move_ids_from_queue_to_excluded_deferred.bind(this),
-            callback_move_ids_from_excluded_to_queue_deferred : this.callback_move_ids_from_excluded_to_queue_deferred.bind(this),
-            callback_move_ids_from_queue_to_processed_deferred : this.callback_move_ids_from_queue_to_processed_deferred.bind(this),
-            callback_move_ids_from_processed_to_queue_deferred : this.callback_move_ids_from_processed_to_queue_deferred.bind(this),
-            callback_move_ids_from_processed_to_excluded_deferred : this.callback_move_ids_from_processed_to_excluded_deferred.bind(this),
-            callback_move_ids_from_excluded_to_processed_deferred : this.callback_move_ids_from_excluded_to_processed_deferred.bind(this),
-            callback_move_ids_from_error_to_queue_deferred : this.callback_move_ids_from_error_to_queue_deferred.bind(this),
-
-            callback_get_dialog_message_move_from_queue_to_excluded : this.callback_get_dialog_message_move_from_queue_to_excluded.bind(this),
-            callback_get_dialog_message_move_from_excluded_to_queue : this.callback_get_dialog_message_move_from_excluded_to_queue.bind(this),
-            callback_get_dialog_message_move_from_queue_to_processed : this.callback_get_dialog_message_move_from_queue_to_processed.bind(this),
-            callback_get_dialog_message_move_from_processed_to_queue : this.callback_get_dialog_message_move_from_processed_to_queue.bind(this),
-            callback_get_dialog_message_move_from_processed_to_excluded : this.callback_get_dialog_message_move_from_processed_to_excluded.bind(this),
-            callback_get_dialog_message_move_from_excluded_to_processed : this.callback_get_dialog_message_move_from_excluded_to_processed.bind(this),
-            callback_get_dialog_message_move_from_error_to_queue : this.callback_get_dialog_message_move_from_error_to_queue.bind(this),
-
-            callback_get_dialog_message_delete_selected : this.callback_get_dialog_message_delete_selected.bind(this),
-            callback_delete_selected_deferred : this.callback_delete_selected_deferred.bind(this),
-        });
-    },
-
-    callback_get_queue_deferred : function() {
-        var deferred = $.Deferred();
-
-        var ids = er_endorse_queue.get_contacts_for_endorse();
-        deferred.resolve(ids);
-
-        return deferred.promise();
-    },
-    callback_get_processed_deferred : function() {
-        var deferred = $.Deferred();
-
-        var ids = er_endorsed_control.get_endorsed_ids();
-        deferred.resolve(ids);
-
-        return deferred.promise();
-    },
-    callback_get_excluded_deferred : function() {
-        var deferred = $.Deferred();
-
-        var ids = er_endorse_excluded.get_excluded_ids();
-        deferred.resolve(ids);
-
-        return deferred.promise();
-    },
-    callback_get_error_deferred : function() {
-        var deferred = $.Deferred();
-
-        var ids = er_endorse_error.get_error_ids();
-        deferred.resolve(ids);
-
-        return deferred.promise();
-    },
-
-    callback_move_ids_from_queue_to_excluded_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_queue_to_excluded(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_excluded_to_queue_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_excluded_to_queue(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_queue_to_processed_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_queue_to_endorsed(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_excluded_to_processed_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_excluded_to_endorsed(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_processed_to_queue_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_endorsed_to_queue(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_processed_to_excluded_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_endorsed_to_excluded(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-    callback_move_ids_from_error_to_queue_deferred : function(ids) {
-        var deferred = $.Deferred();
-        if (ids == null || ids.length == 0) {
-            deferred.resolve();
-            return deferred.promise();
-        }
-
-        er_endorse_mover.move_ids_from_error_to_queue(ids);
-        deferred.resolve();
-
-        return deferred.promise();
-    },
-
-    _generate_move_dialog_message : function(source_tech_name, target_tech_name) {
-        var selected = this.er_Widget_Queue_Proc_Excl.get_selected_count();
-
-        var source_user_name = this.listname_tech_to_user[source_tech_name];
-        var target_user_name = this.listname_tech_to_user[target_tech_name];
-
-        var message = 'Do you want to move '+selected + ' contact';
-        if(selected > 1)
-            message += 's';
-        message += ' from '+source_user_name+' to '+target_user_name;
-        return message;
-    },
-
-    callback_get_dialog_message_move_from_queue_to_excluded : function() {
-        return this._generate_move_dialog_message('queue', 'excluded');
-    },
-    callback_get_dialog_message_move_from_excluded_to_queue : function() {
-        return this._generate_move_dialog_message('excluded', 'queue');
-    },
-    callback_get_dialog_message_move_from_queue_to_processed : function() {
-        return this._generate_move_dialog_message('queue', 'processed');
-    },
-    callback_get_dialog_message_move_from_processed_to_queue : function() {
-        return this._generate_move_dialog_message('processed', 'queue');
-    },
-    callback_get_dialog_message_move_from_excluded_to_processed : function() {
-        return this._generate_move_dialog_message('excluded', 'processed');
-    },
-    callback_get_dialog_message_move_from_processed_to_excluded : function() {
-        return this._generate_move_dialog_message('processed', 'excluded');
-    },
-    callback_get_dialog_message_move_from_error_to_queue : function() {
-        return this._generate_move_dialog_message('error', 'queue');
-    },
-
-    callback_get_dialog_message_delete_selected : function(listname, count) {
-        var user_listname = this.listname_tech_to_user[listname];
-
-        if(count <= 0)
-            return 'Nothing selected';
-        var message = 'Delete '+count+' selected contact';
-        if(count > 1)
-            message += 's';
-        message += ' from '+user_listname+' ?';
-        return message;
-    },
-    callback_delete_selected_deferred : function(listname, ids) {
-        if(listname == 'queue') {
-            er_endorse_queue.delete_ids(ids);
-        } else if(listname == 'processed') {
-            er_endorsed_control.delete_ids(ids);
-        } else if(listname == 'excluded') {
-            er_endorse_excluded.delete_ids(ids);
-        } else if(listname == 'error') {
-            er_endorse_error.delete_ids(ids);
-        }
-
-        var deferred = $.Deferred();
-        deferred.resolve();
-        return deferred.promise();
     }
+}
+
+ERLH_Order.prototype = {
+
+};
+
+
+ERLH_Order.static = {};
+
+ERLH_Order.static.status = {};
+ERLH_Order.static.status.registered = 1;
+ERLH_Order.static.status.deleted = -1;
+ERLH_Order.static.status.completed = 2;
+
+ERLH_Order.static.receipt_status = {};
+ERLH_Order.static.receipt_status.error = -1;
+ERLH_Order.static.receipt_status.not_sent = 0;
+ERLH_Order.static.receipt_status.ok = 1;
+
+ERLH_Order.static.method = {};
+ERLH_Order.static.method.paypal_invoice_personal = 1;
+ERLH_Order.static.method.paypal_invoice_organisation = 2;
+ERLH_Order.static.method.paypal_invoice_bank_card = 3;
+ERLH_Order.static.method.payoneer_invoice_personal = 4;
+ERLH_Order.static.method.payoneer_invoice_organisation = 5;
+ERLH_Order.static.method.payoneer_invoice_bank_card = 6;
+ERLH_Order.static.method.webmoney = 7;
+ERLH_Order.static.method.yandex_money = 8;
+ERLH_Order.static.method.platron_bank_card = 9;
+
+ERLH_Order.static.method_id_to_name = {
+    1 : 'Personal PayPal account',
+    2 : 'Organisation PayPal account',
+    3 : 'Credit/Debit card via PayPal',
+    4 : 'Personal Payoneer account',
+    5 : 'Organisation Payoneer account',
+    6 : 'Credit/Debit card via Payoneer',
+    7 : 'WebMoney',
+    8 : 'Yandex Money',
+    9 : 'Credit/Debit Bank Card',
+};
+
+/**
+ *
+ * @param options
+ * @param options.without_payoneer
+ * @param options.without_credit_debit_card_via_paypal
+ * @param options.without_yandex
+ * @param options.without_webmoney
+ * @returns {{}}
+ */
+ERLH_Order.static.get_method_ids_to_names = function(options) {
+    options = options ? options : {};
+    var keys = Object.keys(ERLH_Order.static.method_id_to_name);
+    var result = {};
+    for(var i= 0, key; i<keys.length; i++) {
+        key = keys[i];
+        result[key] = ERLH_Order.static.method_id_to_name[key];
+    }
+
+    if(options.without_credit_debit_card_via_paypal) {
+        delete result[3];
+    }
+
+    if(options.without_payoneer) {
+        delete result[4];
+        delete result[5];
+        delete result[6];
+    }
+    if(options.without_webmoney) {
+        delete result[7];
+    }
+    if(options.without_yandex) {
+        delete result[8];
+    }
+    if(options.without_credit_debit_card_via_platron) {
+        delete result[9];
+    }
+
+    /*if(!erlh_curr_user.is_lh_admin())
+        delete result[9];*/
+
+    return result;
+};
+
+ERLH_Order.static.get_status_ids_to_names = function() {
+    var result = {};
+    var keys = Object.keys(ERLH_Order.static.status);
+
+    for(var i= 0, name, id; i<keys.length; i++) {
+        name = keys[i];
+        id = ERLH_Order.static.status[name];
+        result[id] = name;
+    }
+
+    return result;
+};
+
+ERLH_Order.static.get_receipt_status_ids_to_names = function() {
+    var result = {};
+    var keys = Object.keys(ERLH_Order.static.receipt_status);
+
+    for(var i= 0, name, id; i<keys.length; i++) {
+        name = keys[i];
+        id = ERLH_Order.static.receipt_status[name];
+        result[id] = name;
+    }
+
+    return result;
+};
+
+ERLH_Order.static.pricing_id_to_amount = {
+    1 : 15,
+    3 : 40,
+    6 : 60,
+    12 : 99
+};
+
+ERLH_Order.static.quantity_range_to_discount = [
+    {q_start : 1, q_end : 9, discount : 0},
+    {q_start : 10, q_end : 19, discount : 10},
+    {q_start : 20, q_end : 49, discount : 20},
+    {q_start : 50, q_end : Number.MAX_SAFE_INTEGER, discount : 30},
+];
+
+ERLH_Order.static.get_discount_for_quantity = function(quantity) {
+    var arr = ERLH_Order.static.quantity_range_to_discount;
+    for(var i= 0, el; i<arr.length; i++) {
+        el = arr[i];
+        if(el.q_start <= quantity && el.q_end >= quantity)
+            return el.discount;
+    }
+    return 0;
+};
+
+ERLH_Order.server = {};
+
+ERLH_Order.server.updatestatus = function(order_id, new_status, callback) {
+    erlh_server.send(erlh_server.url.order.updatestatus,
+        {
+            order_id : order_id,
+            new_status : new_status,
+        },
+        function(err, response) {
+            callback(err, response);
+        }
+    );
+};
+
+ERLH_Order.server.executeorder = function(order_id, options, callback) {
+    erlh_server.send(erlh_server.url.order.executeorder,
+        {
+            order_id : order_id,
+            options : options,
+        },
+        function(err, response) {
+            callback(err, response);
+        }
+    );
+};
+
+ERLH_Order.server.sendinvoice = function(order_id, invoice_url, options, callback) {
+    erlh_server.send(erlh_server.url.order.sendinvoice,
+        {
+            order_id : order_id,
+            invoice_url : invoice_url,
+        },
+        function(err, response) {
+            callback(err, response);
+        }
+    );
 };
 /**
  * Created by erinsasha on 18/08/17.
@@ -14241,6 +14241,115 @@ ER_W_Function_Chooser.prototype = {
     _on_change_select_function : function(option_id) {
         this.current_function_id = option_id;
         this._refresh_list_selector();
+    },
+};
+/**
+ * Created by erinsasha on 23/08/17.
+ */
+// ER_W_Sublist_Chooser
+/**
+ *
+ * @param options
+ * @param options.html_class
+ * @param options.jq_parent
+ * @param options.sublists : [{id : id, name : name, count : count}]
+ * @constructor
+ */
+function ER_W_Sublist_Chooser(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+    this.sublists = options.sublists;
+
+    this._process();
+}
+
+ER_W_Sublist_Chooser.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html_class = this.options.html_class ? this.options.html_class : '';
+
+        var html = '<div class="ER_W_Sublist_Chooser '+html_class+'">';
+
+        if(this.sublists)
+            html += this._build_HTML_sublist_items(this.sublists);
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_sublist_items : function(items) {
+        var html = '';
+
+        for(var i=0; i<items.length; i++) {
+            html += this._build_HTML_sublist_item(items[i], i==0);
+        }
+        
+        return html;
+    },
+    _build_HTML_sublist_item : function(item, is_set) {
+        var set = is_set ? 'er_set' : '';
+        return '<div class="er_sublist_item '+set+'" data-id="'+item.id+'"><span class="er_name">'+item.name+'</span><span class="er_count">'+item.counter+'</span></div>';
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+        this._add_handlers_sublist_item(this.jq_main.find('.er_sublist_item'));
+    },
+    _add_handlers_sublist_item : function(jq_sublists) {
+        jq_sublists.click(this._on_click_item.bind(this));
+    },
+    
+    remove_sublists_items : function() {
+        this.sublists = [];
+        this.jq_main.find('.er_sublist_item').remove();
+    },
+    set_sublists_items : function(sublists) {
+        this.remove_sublists_items();
+        this.sublists = sublists;
+
+        var html_sublists = this._build_HTML_sublist_items(sublists);
+        var jq_sublists = $(html_sublists).appendTo(this.jq_main);
+        this._add_handlers_sublist_item(jq_sublists);
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+    get_item_id : function() {
+        return this.jq_main.find('.er_sublist_item.er_set').attr('data-id');
+    },
+    get_selected_sublist : function() {
+        var id = this.get_item_id();
+        for(var i= 0, sublist; i<this.sublists.length; i++) {
+            sublist = this.sublists[i];
+            if(sublist.id == id)
+                return sublist;
+        }
+    },
+
+    set_new_counter_for_sublist : function(sublist_id, new_counter) {
+        var jq_sublist = this.jq_main.find('.er_sublist_item[data-id="'+sublist_id+'"]');
+        jq_sublist.find('.er_count').text(new_counter);
+    },
+
+    _on_click_item : function(event) {
+        var jq_item = $(event.currentTarget);
+        if(jq_item.hasClass('er_set'))
+            return;
+        this.jq_main.find('.er_sublist_item.er_set').removeClass('er_set');
+        jq_item.addClass('er_set');
     },
 };
 /**
@@ -14725,115 +14834,6 @@ ER_W_List_Manager.prototype = {
     },
 };
 /**
- * Created by erinsasha on 23/08/17.
- */
-// ER_W_Sublist_Chooser
-/**
- *
- * @param options
- * @param options.html_class
- * @param options.jq_parent
- * @param options.sublists : [{id : id, name : name, count : count}]
- * @constructor
- */
-function ER_W_Sublist_Chooser(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-    this.sublists = options.sublists;
-
-    this._process();
-}
-
-ER_W_Sublist_Chooser.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html_class = this.options.html_class ? this.options.html_class : '';
-
-        var html = '<div class="ER_W_Sublist_Chooser '+html_class+'">';
-
-        if(this.sublists)
-            html += this._build_HTML_sublist_items(this.sublists);
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_sublist_items : function(items) {
-        var html = '';
-
-        for(var i=0; i<items.length; i++) {
-            html += this._build_HTML_sublist_item(items[i], i==0);
-        }
-        
-        return html;
-    },
-    _build_HTML_sublist_item : function(item, is_set) {
-        var set = is_set ? 'er_set' : '';
-        return '<div class="er_sublist_item '+set+'" data-id="'+item.id+'"><span class="er_name">'+item.name+'</span><span class="er_count">'+item.counter+'</span></div>';
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-        this._add_handlers_sublist_item(this.jq_main.find('.er_sublist_item'));
-    },
-    _add_handlers_sublist_item : function(jq_sublists) {
-        jq_sublists.click(this._on_click_item.bind(this));
-    },
-    
-    remove_sublists_items : function() {
-        this.sublists = [];
-        this.jq_main.find('.er_sublist_item').remove();
-    },
-    set_sublists_items : function(sublists) {
-        this.remove_sublists_items();
-        this.sublists = sublists;
-
-        var html_sublists = this._build_HTML_sublist_items(sublists);
-        var jq_sublists = $(html_sublists).appendTo(this.jq_main);
-        this._add_handlers_sublist_item(jq_sublists);
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-    get_item_id : function() {
-        return this.jq_main.find('.er_sublist_item.er_set').attr('data-id');
-    },
-    get_selected_sublist : function() {
-        var id = this.get_item_id();
-        for(var i= 0, sublist; i<this.sublists.length; i++) {
-            sublist = this.sublists[i];
-            if(sublist.id == id)
-                return sublist;
-        }
-    },
-
-    set_new_counter_for_sublist : function(sublist_id, new_counter) {
-        var jq_sublist = this.jq_main.find('.er_sublist_item[data-id="'+sublist_id+'"]');
-        jq_sublist.find('.er_count').text(new_counter);
-    },
-
-    _on_click_item : function(event) {
-        var jq_item = $(event.currentTarget);
-        if(jq_item.hasClass('er_set'))
-            return;
-        this.jq_main.find('.er_sublist_item.er_set').removeClass('er_set');
-        jq_item.addClass('er_set');
-    },
-};
-/**
  * Created by erinsasha on 03/09/17.
  */
 // ER_W_Download_Mini
@@ -15130,749 +15130,6 @@ var er_profiles_mini_common_csv = window.er_profiles_mini_common_csv || {
             return field;
         }
     };
-/**
- * Created by erinsasha on 08/05/17.
- */
-
-function ER_W_Backup_Modes(options) {
-    this.options = options;
-    this.jq_parent = options.jq_parent;
-
-    this._build();
-}
-
-ER_W_Backup_Modes.prototype = {
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Backup_Modes">';
-
-        html += '</div';
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-
-        this._build_modes_selector();
-        this._build_profiles_list_selector();
-    },
-    _build_modes_selector : function() {
-        this.w_modes_selector = new ERLH_W_Select({
-            jq_parent : this.jq_main,
-            label : 'Backup mode',
-            selected_id : er_backup_exporter.MODES.all.id,
-            ids_to_options : er_backup_exporter.MODES,
-            on_change : this._on_mode_change_selector.bind(this)
-        });
-    },
-    _build_profiles_list_selector : function() {
-        this.w_profiles_list_selector = new ER_W_Profiles_List_Selector({
-            jq_parent : this.jq_main,
-        });
-
-        this.w_profiles_list_selector.hide();
-    },
-
-    get : function() {
-        var mode = this.w_modes_selector.get();
-        var obj = {
-            mode : mode,
-            options : {}
-        };
-
-        if(mode == er_backup_exporter.MODES.profiles_list.id) {
-            obj.options.list_id = this.w_profiles_list_selector.get();
-        }
-
-        return obj;
-    },
-
-    _on_mode_change_selector : function(mode_id) {
-        if(mode_id == er_backup_exporter.MODES.profiles_list.id) {
-            this.w_profiles_list_selector.show();
-        } else {
-            this.w_profiles_list_selector.hide();
-        }
-    }
-};
-/**
- * Created by Alex on 16.03.2017.
- */
-// ER_Widget_Backup_Download
-function ER_Widget_Backup_Download (options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
-
-    this.build_main_view();
-};
-
-ER_Widget_Backup_Download.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<div class="ER_Widget_Backup_Download">';
-
-        html += '<button class="download"></button>';
-        html += this._HTML_build_building_backup_state();
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_building_backup_state : function() {
-        return '<div class="stat_cont building_backup_state_cont"><span class="title label"></span><span class="value">NOT STARTED</span></div>';
-    },
-
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-        this.jq_btn_download = this.jq_main.find('button.download');
-        this.jq_btn_download.click(this._on_click_btn_download.bind(this));
-
-        this.jq_building_backup_state_value = this.jq_main.find('.building_backup_state_cont .value');
-
-        this.w_backup_modes = new ER_W_Backup_Modes({
-            jq_parent : this.jq_main
-        });
-
-        window.addEventListener(
-            er_backup_exporter.EVENT_BACKUP_SMALL_OBJ_GENERATED,
-            this.on_EVENT_BACKUP_SMALL_OBJ_GENERATED.bind(this),
-            false);
-        
-    },
-
-    _set_btn_download_as_started : function() {
-        this.jq_btn_download.addClass('started');
-    },
-    _set_btn_download_as_not_started : function() {
-        this.jq_btn_download.removeClass('started');
-    },
-
-    is_widget_visible : function() {
-        return this.jq_main.height() > 0;
-    },
-
-    _on_click_btn_download : function(event) {
-        if(this.jq_btn_download.hasClass('started')) {
-            return;
-        } else {
-            var that = this;
-
-            that._set_btn_download_as_started();
-
-            var mode = that.w_backup_modes.get();
-            er_backup_exporter.build_file(mode.mode, mode.options)
-                .then(function() {
-                    that._set_btn_download_as_not_started();
-                    that.jq_building_backup_state_value.text('FINISHED');
-                });
-        }
-    },
-
-    on_EVENT_BACKUP_SMALL_OBJ_GENERATED : function(event) {
-        this.jq_building_backup_state_value.text(event.detail);
-    },
-
-    _on_click_mode_after_collect_turn_on : function() {
-        this._on_click_btn_collect(null, true);
-    },
-};
-
-/**
- * Created by Alex on 17.03.2017.
- */
-// ER_Widget_Restore_from_Backup
-function ER_Widget_Restore_from_Backup (options) {
-    this.options = options;
-    this.jq_parent = this.options.jq_parent;
-
-    this.build_main_view();
-};
-
-ER_Widget_Restore_from_Backup.prototype = {
-    _HTML_build_main_view : function() {
-        var html = '<div class="ER_Widget_Restore_from_Backup">';
-
-        html += '<button class="choose_file"></button>';
-        html += '<input class="inp_backup_file er_hidden" type="file">';
-        html += this._HTML_build_building_import_state();
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_building_import_state : function() {
-        return '<div class="stat_cont building_import_state_cont"><span class="title label"></span><span class="value">NOT STARTED</span></div>';
-    },
-
-    build_main_view : function(jq_parent) {
-        if(jq_parent)
-            this.jq_parent = jq_parent;
-
-        var html = this._HTML_build_main_view();
-        this.jq_main = $(html).appendTo(this.jq_parent);
-        this._add_handlers();
-    },
-
-    _add_handlers : function() {
-
-        this.jq_btn_choose_file = this.jq_main.find('button.choose_file');
-        this.jq_btn_choose_file.click(this._on_click_btn_choose_file.bind(this));
-        
-        this.jq_inp_backup_file = this.jq_main.find('.inp_backup_file');
-        er_backup_importer.set_jq_file_input_handlers(this.jq_inp_backup_file);
-
-        this.jq_building_import_state_value = this.jq_main.find('.building_import_state_cont .value');
-
-        window.addEventListener(
-            er_backup_importer.EVENT_BACKUP_SMALL_OBJ_IMPORTED,
-            this.on_EVENT_BACKUP_SMALL_OBJ_IMPORTED.bind(this),
-            false);
-
-    },
-
-    _set_btn_choose_file_as_started : function() {
-        this.jq_btn_choose_file.addClass('started');
-    },
-    _set_btn_choose_file_as_not_started : function() {
-        this.jq_btn_choose_file.removeClass('started');
-    },
-
-    is_widget_visible : function() {
-        return this.jq_main.height() > 0;
-    },
-
-    _on_click_btn_choose_file : function(event) {
-        if(this.jq_btn_choose_file.hasClass('started')) {
-            return;
-        } else {
-            var that = this;
-
-            var evtL = document.createEvent("CustomEvent");
-            evtL.initCustomEvent('EVENT_GET_LK_INFO', true, true,
-                function(license_info) {
-                    if (license_info.is_still_valid) {
-                        if (license_info.type == 'p') {
-
-                            er_main_view._info_popup_show(er_translator.get_text('ER_Widget_Restore_from_Backup','messages','not_for_this_license'));
-                        } else {
-                            that.jq_inp_backup_file.click();
-                        }
-                    }
-                });
-            window.dispatchEvent(evtL);
-        }
-    },
-
-    on_EVENT_BACKUP_SMALL_OBJ_IMPORTED : function(event) {
-        this.jq_building_import_state_value.text(event.detail);
-    },
-
-    _on_click_mode_after_collect_turn_on : function() {
-        this._on_click_btn_collect(null, true);
-    },
-};
-
-var er_backup_common_exporter = window.er_backup_common_exporter || {
-        build_object : function() {
-            var deferred = $.Deferred();
-            var obj = {};
-            obj.lc = this._build_lc();
-
-            this._build_db()
-                .then(function(db) {
-                    obj.db = db;
-                    deferred.resolve(obj);
-                });
-
-            return deferred.promise();
-        },
-        _build_lc : function() {
-            var lc = {};
-
-            lc.er_country_code = localStorage.er_country_code;
-            lc.er_is_new_style_page = localStorage.er_is_new_style_page;
-            lc.er_language_id = localStorage.er_language_id;
-            lc.er_main_view_is_collapsed = localStorage.er_main_view_is_collapsed;
-            lc.er_names_eng_to_rus = localStorage.er_names_eng_to_rus;
-            lc.er_names_rus_to_eng = localStorage.er_names_rus_to_eng;
-
-            return lc;
-        },
-        _build_db : function() {
-            var deferred = $.Deferred();
-            var db = {};
-
-            er_mini_profiles_db.get_all_profiles()
-                .then(function(mini_profiles) {
-                    db.mini_profiles = mini_profiles;
-                })
-                .then(er_sn_ids_map_db.get_all_maps.bind(er_sn_ids_map_db))
-                .then(function(sn_ids_maps) {
-                    db.sn_ids_maps = sn_ids_maps;
-                })
-                .then(function() {
-                    deferred.resolve(db);
-                });
-
-
-            return deferred.promise();
-        },
-    };
-/**
- * Created by Alex on 14.03.2017.
- */
-var er_backup_common_importer = window.er_backup_common_importer || {
-        import : function(obj) {
-            var deferred = $.Deferred();
-
-            var that = this;
-
-            if(!obj) {
-                er_logger.log('SKIPS : Common data missing');
-                deferred.resolve(true);
-                return deferred.promise();
-            }
-            this._import_db(obj.db)
-                .then(function() {
-                    that._import_lc(obj.lc);
-                    deferred.resolve(true);
-                });
-
-            return deferred.promise();
-        },
-
-        _import_db : function(db) {
-            var deferred = $.Deferred();
-
-            er_mini_profiles_db.push_profiles(db.mini_profiles)
-                .then(er_sn_ids_map_db.push_maps(db.sn_ids_maps))
-                .then(deferred.resolve.bind(deferred));
-
-            return deferred.promise();
-        },
-
-        _import_lc : function(lc) {
-            if(lc.er_country_code)
-                localStorage.er_country_code = lc.er_country_code;
-            else
-                delete localStorage.er_country_code;
-
-            if(lc.er_is_new_style_page)
-                localStorage.er_is_new_style_page = lc.er_is_new_style_page;
-            else
-                delete localStorage.er_is_new_style_page;
-
-            if(lc.er_language_id)
-                localStorage.er_language_id = lc.er_language_id;
-            else
-                delete localStorage.er_language_id;
-
-            if(lc.er_main_view_is_collapsed)
-                localStorage.er_main_view_is_collapsed = lc.er_main_view_is_collapsed;
-            else
-                delete localStorage.er_main_view_is_collapsed;
-
-            if(lc.er_names_eng_to_rus)
-                localStorage.er_names_eng_to_rus = lc.er_names_eng_to_rus;
-            else
-                delete localStorage.er_names_eng_to_rus;
-
-            if(lc.er_names_rus_to_eng)
-                localStorage.er_names_rus_to_eng = lc.er_names_rus_to_eng;
-            else
-                delete localStorage.er_names_rus_to_eng;
-        },
-    };
-/**
- * Created by Alex on 12.03.2017.
- */
-var er_backup_exporter = window.er_backup_exporter || {
-        EVENT_BACKUP_SMALL_OBJ_GENERATED : 'ER_EVENT_BACKUP_SMALL_OBJ_GENERATED',
-
-        MODES : {
-            all : {id : 'all', name : 'All'},
-            all_without_profiles : {id : 'all_without_profiles', name : 'All without profiles'},
-            profiles_list : {id : 'profiles_list', name : 'Profiles list'},
-        },
-
-        build_file : function(mode, options) {
-            var deferred = $.Deferred();
-
-            if(!mode)
-                mode = this.MODES.all.id;
-
-            var that = this;
-
-            this._build_object(mode, options)
-                .then(function(obj) {
-                    //var text = btoa(JSON.stringify(obj));
-                    var text = that._ug(JSON.stringify(obj));
-                    var name = 'LH_Backup_' + er_utils.datetimeJSToServer(new Date) + '.txt';
-                    name = name.replace(/:/g, "-").replace(/-/g, "_").replace(/ /g, "_");
-                    that._download(name, text);
-
-                    that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('DONE!');
-                    deferred.resolve();
-                });
-
-            return deferred.promise();
-        },
-
-        _build_object : function(mode, options) {
-            var deferred = $.Deferred();
-
-            if(!mode)
-                mode = this.MODES.all.id;
-
-            this._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('Building ! ! !');
-
-            var obj = {};
-            obj.export_mode = mode;
-            obj.created = (new Date()).getTime();
-
-            var that = this;
-
-            if(mode == this.MODES.profiles_list.id) {
-                er_profiles_extractor_backup_export.build_object_for_list(options.list_id)
-                    .then(function(profiles_extractor) {
-                        obj.profiles_extractor = profiles_extractor;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
-                    })
-                    .then(function() {
-                        deferred.resolve(obj);
-                    });
-            } else {
-                er_backup_common_exporter.build_object()
-                    .then(function(common) {
-                        obj.common = common;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('GENERAL DATA EXPORTED');
-                    })
-                    .then(er_broadcast_backup_export.build_object.bind(er_broadcast_backup_export))
-                    .then(function(broadcasts) {
-                        obj.broadcasts = broadcasts;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('BROADCASTS EXPORTED');
-                    })
-                    .then(er_autovisitor_backup_export.build_object.bind(er_autovisitor_backup_export))
-                    .then(function(autovisitors) {
-                        obj.autovisitors = autovisitors;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('AUTO-VISIT LISTS EXPORTED');
-                    })
-                    .then(er_connect_in_search_backup_export.build_object.bind(er_connect_in_search_backup_export))
-                    .then(function(connect_in_search) {
-                        obj.connect_in_search = connect_in_search;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('CONNECT IN SEARCH INFO EXPORTED');
-                    })
-                    .then(er_connect_selected_backup_export.build_object.bind(er_connect_selected_backup_export))
-                    .then(function(connect_selected) {
-                        obj.connect_selected = connect_selected;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('Connect,Select & Invite INFO EXPORTED');
-                    })
-                    .then(er_endorse_backup_export.build_object.bind(er_endorse_backup_export))
-                    .then(function(endorse) {
-                        obj.endorse = endorse;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('ENDORSEMENTS EXPORTED');
-                    })
-                    .then(er_user_signature_backup_export.build_object.bind(er_user_signature_backup_export))
-                    .then(function(user_signature) {
-                        obj.user_signature = user_signature;
-                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('USER SIGNATURE EXPORTED');
-                    })
-                    .then(function() {
-                        if(mode == that.MODES.all_without_profiles.id) {
-                            return;
-                        } else {
-                            return er_profiles_extractor_backup_export.build_object()
-                                .then(function(profiles_extractor) {
-                                    obj.profiles_extractor = profiles_extractor;
-                                    that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
-                                })
-                        }
-                    })
-                    /*.then(er_profiles_extractor_backup_export.build_object.bind(er_profiles_extractor_backup_export))
-                     .then(function(profiles_extractor) {
-                     obj.profiles_extractor = profiles_extractor;
-                     that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
-                     })*/
-                    .then(function() {
-                        deferred.resolve(obj);
-                    });
-            }
-
-
-
-            return deferred.promise();
-        },
-        _send_EVENT_BACKUP_SMALL_OBJ_GENERATED : function(message) {
-            var evt = document.createEvent("CustomEvent");
-            evt.initCustomEvent(this.EVENT_BACKUP_SMALL_OBJ_GENERATED, true, true, message);
-            window.dispatchEvent(evt);
-        },
-
-        _download : function(filename, text) {
-            er_utils_file.export_file(filename, text, 'text');
-        },
-        _ug : function(text) {
-            var func_revers = function(str) {
-                var revers = '';
-                for(var i=str.length-1; i>=0; i--) {
-                    revers += str[i];
-                }
-
-                return revers;
-            };
-            text = func_revers(text);
-
-            var pos = er_utils.getRandomInt(2,9);
-            var t_1 = text.substring(0, pos-1);
-            var t_2 = text.substring(pos-1);
-            text = pos + t_1 + ':' + t_2;
-            return text;
-        },
-
-
-
-    };
-/**
- * Created by Alex on 16.03.2017.
- */
-var er_backup_importer = window.er_backup_importer || {
-        EVENT_BACKUP_SMALL_OBJ_IMPORTED : 'ER_EVENT_BACKUP_SMALL_OBJ_IMPORTED',
-
-        set_jq_file_input_handlers : function(jq_file_input) {
-            var domElem = jq_file_input[0];
-            domElem.addEventListener('change', this.on_jq_file_input_change.bind(this), false);
-        },
-        on_jq_file_input_change : function(event) {
-            var file = event.target.files[0];
-
-            var reader = new FileReader();
-
-            var that = this;
-
-            // Closure to capture the file information.
-            reader.onload = (function(theFile) {
-                return function(event) {
-                    var text = event.target.result;
-                    that._import_from_text(text)
-                        .then(function() {
-                            window.location.reload();
-                        });
-                };
-            })(file);
-
-            reader.readAsText(file);
-        },
-
-        _import_from_text : function(text) {
-            var obj;
-            try {
-                //obj = JSON.parse(atob(text));
-                obj = JSON.parse(this._uug(text));
-                this._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FILE PARSED');
-            } catch (error) {
-                er_logger.log(error);
-                this._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PARSE FILE ERROR');
-
-                var deferred = $.Deferred();
-                deferred.reject();
-                return deferred.promise();
-            }
-            return this._import_object(obj);
-        },
-
-        _import_object : function(obj) {
-            var deferred = $.Deferred();
-
-            var that = this;
-
-            if(!obj.export_mode)
-                obj.export_mode = er_backup_exporter.MODES.all.id;
-
-            if(obj.export_mode == er_backup_exporter.MODES.profiles_list.id) {
-                that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('Importing Profiles List');
-                er_profiles_extractor_backup_import.import_list(obj.profiles_extractor)
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PROFILES LIST IMPORTED');
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FINISHED');
-                        deferred.resolve();
-                    });
-            } else {
-                er_backup_common_importer.import(obj.common)
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('COMMON DATA IMPORTED');
-                    })
-                    .then(function() {
-                        return er_broadcast_backup_import.import(obj.broadcasts);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('BROADCASTS IMPORTED');
-                    })
-                    .then(function() {
-                        return er_autovisitor_backup_import.import(obj.autovisitors);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('AUTO-VISIT LISTS IMPORTED');
-                    })
-                    .then(function() {
-                        return er_connect_in_search_backup_import.import(obj.connect_in_search);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('CONNECT IN SEARCH INFO IMPORTED');
-                    })
-                    .then(function() {
-                        return er_connect_selected_backup_import.import(obj.connect_selected);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('Connect,Select & Invite INFO IMPORTED');
-                    })
-                    .then(function() {
-                        return er_endorse_backup_import.import(obj.endorse);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('ENDORSEMENTS IMPORTED');
-                    })
-                    .then(function() {
-                        return er_user_signature_backup_import.import(obj.user_signature);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('USER SIGNATURE IMPORTED');
-                    })
-                    .then(function() {
-                        return er_profiles_extractor_backup_import.import(obj.profiles_extractor);
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PROFILES EXTRACTOR IMPORTED');
-                    })
-                    .then(function() {
-                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FINISHED');
-                        deferred.resolve();
-                    });
-            }
-
-
-            return deferred.promise();
-        },
-        _send_EVENT_BACKUP_SMALL_OBJ_IMPORTED : function(message) {
-            var evt = document.createEvent("CustomEvent");
-            evt.initCustomEvent(this.EVENT_BACKUP_SMALL_OBJ_IMPORTED, true, true, message);
-            window.dispatchEvent(evt);
-        },
-
-        _uug : function(text) {
-            var func_revers = function(str) {
-                var revers = '';
-                for(var i=str.length-1; i>=0; i--) {
-                    revers += str[i];
-                }
-
-                return revers;
-            };
-
-            pos = Number(text[0]);
-            var t_1 = text.substring(1, pos);
-            var t_2 = text.substring(pos+1);
-            var t = t_1+t_2;
-            t = func_revers(t);
-            return t;
-        },
-    };
-/**
- * Created by Alex on 16.03.2017.
- */
-var er_backup_view = window.er_backup_view || {
-        type : 'er_backup_view',
-        tittle : 'Backup',
-
-        init_main : function() {
-            if (this.inited)
-                return;
-
-            this.jq_main = $(this._HTML_build_main());
-
-            this._add_handlers();
-
-            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-                //er_main_view.show_settings(this.type);
-
-            this.inited = true;
-        },
-        _HTML_build_main : function() {
-            var html = '<div class="er_sub_view '+this.type+'">';
-
-            html += this._HTML_build_tabs_pannel();
-
-            html += this._HTML_build_content_backup();
-            html += this._HTML_build_content_restore();
-
-            html += '</div>';
-            return html;
-        },
-        _HTML_build_tabs_pannel : function() {
-            var html = '<div class="tabs_pannel">';
-
-            html += '<span class="tab set" data-tab="backup"></span>';
-            html += '<span class="tab" data-tab="restore"></span>';
-
-            html += '</div>';
-
-            return html;
-        },
-
-        _HTML_build_content_backup : function() {
-            var html = '<div class="content set" data-type="backup">';
-            html += '</div>';
-            return html;
-        },
-        _HTML_build_content_restore : function() {
-            var html = '<div class="content" data-type="restore">';
-            html += '</div>';
-            return html;
-        },
-
-        _add_handlers : function() {
-            /*new ER_Widget_How_To({
-                jq_parent : this.jq_main,
-                links : [ER_Widget_How_To.links.er_backup_view]
-            });*/
-
-            this.jq_main.children('.tabs_pannel').children('.tab').click(this._on_click_tab.bind(this));
-
-            var jq_content_backup = this.jq_main.find('.content[data-type=backup]');
-            var jq_content_restore = this.jq_main.find('.content[data-type=restore]');
-
-            this.er_Widget_Backup_Download = new ER_Widget_Backup_Download({
-                jq_parent : jq_content_backup
-            });
-
-            this.er_Widget_Restore_from_Backup = new ER_Widget_Restore_from_Backup({
-                jq_parent : jq_content_restore
-            });
-        },
-
-        _on_main_view_ready_for_sub_view : function() {
-            this.init_main();
-        },
-        _on_click_tab : function(event) {
-            var jq_tab = $(event.target);
-            if(jq_tab.hasClass('set'))
-                return;
-
-            jq_tab.siblings('.tab.set').removeClass('set');
-            this.jq_main.children('.content.set').removeClass('set');
-
-            jq_tab.addClass('set');
-            this.jq_main.children('.content[data-type='+jq_tab.attr('data-tab')+']').addClass('set');
-        },
-    };
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_backup_view._on_main_view_ready_for_sub_view() });
 /**
  * Created by erinsasha on 04/05/17.
  */
@@ -22338,6 +21595,749 @@ var er_autovisitor_view = window.er_autovisitor_view || {
     };
 document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_autovisitor_view._on_main_view_ready_for_sub_view() });
 /**
+ * Created by erinsasha on 08/05/17.
+ */
+
+function ER_W_Backup_Modes(options) {
+    this.options = options;
+    this.jq_parent = options.jq_parent;
+
+    this._build();
+}
+
+ER_W_Backup_Modes.prototype = {
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Backup_Modes">';
+
+        html += '</div';
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+
+        this._build_modes_selector();
+        this._build_profiles_list_selector();
+    },
+    _build_modes_selector : function() {
+        this.w_modes_selector = new ERLH_W_Select({
+            jq_parent : this.jq_main,
+            label : 'Backup mode',
+            selected_id : er_backup_exporter.MODES.all.id,
+            ids_to_options : er_backup_exporter.MODES,
+            on_change : this._on_mode_change_selector.bind(this)
+        });
+    },
+    _build_profiles_list_selector : function() {
+        this.w_profiles_list_selector = new ER_W_Profiles_List_Selector({
+            jq_parent : this.jq_main,
+        });
+
+        this.w_profiles_list_selector.hide();
+    },
+
+    get : function() {
+        var mode = this.w_modes_selector.get();
+        var obj = {
+            mode : mode,
+            options : {}
+        };
+
+        if(mode == er_backup_exporter.MODES.profiles_list.id) {
+            obj.options.list_id = this.w_profiles_list_selector.get();
+        }
+
+        return obj;
+    },
+
+    _on_mode_change_selector : function(mode_id) {
+        if(mode_id == er_backup_exporter.MODES.profiles_list.id) {
+            this.w_profiles_list_selector.show();
+        } else {
+            this.w_profiles_list_selector.hide();
+        }
+    }
+};
+/**
+ * Created by Alex on 16.03.2017.
+ */
+// ER_Widget_Backup_Download
+function ER_Widget_Backup_Download (options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Backup_Download.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<div class="ER_Widget_Backup_Download">';
+
+        html += '<button class="download"></button>';
+        html += this._HTML_build_building_backup_state();
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_building_backup_state : function() {
+        return '<div class="stat_cont building_backup_state_cont"><span class="title label"></span><span class="value">NOT STARTED</span></div>';
+    },
+
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+        this.jq_btn_download = this.jq_main.find('button.download');
+        this.jq_btn_download.click(this._on_click_btn_download.bind(this));
+
+        this.jq_building_backup_state_value = this.jq_main.find('.building_backup_state_cont .value');
+
+        this.w_backup_modes = new ER_W_Backup_Modes({
+            jq_parent : this.jq_main
+        });
+
+        window.addEventListener(
+            er_backup_exporter.EVENT_BACKUP_SMALL_OBJ_GENERATED,
+            this.on_EVENT_BACKUP_SMALL_OBJ_GENERATED.bind(this),
+            false);
+        
+    },
+
+    _set_btn_download_as_started : function() {
+        this.jq_btn_download.addClass('started');
+    },
+    _set_btn_download_as_not_started : function() {
+        this.jq_btn_download.removeClass('started');
+    },
+
+    is_widget_visible : function() {
+        return this.jq_main.height() > 0;
+    },
+
+    _on_click_btn_download : function(event) {
+        if(this.jq_btn_download.hasClass('started')) {
+            return;
+        } else {
+            var that = this;
+
+            that._set_btn_download_as_started();
+
+            var mode = that.w_backup_modes.get();
+            er_backup_exporter.build_file(mode.mode, mode.options)
+                .then(function() {
+                    that._set_btn_download_as_not_started();
+                    that.jq_building_backup_state_value.text('FINISHED');
+                });
+        }
+    },
+
+    on_EVENT_BACKUP_SMALL_OBJ_GENERATED : function(event) {
+        this.jq_building_backup_state_value.text(event.detail);
+    },
+
+    _on_click_mode_after_collect_turn_on : function() {
+        this._on_click_btn_collect(null, true);
+    },
+};
+
+/**
+ * Created by Alex on 17.03.2017.
+ */
+// ER_Widget_Restore_from_Backup
+function ER_Widget_Restore_from_Backup (options) {
+    this.options = options;
+    this.jq_parent = this.options.jq_parent;
+
+    this.build_main_view();
+};
+
+ER_Widget_Restore_from_Backup.prototype = {
+    _HTML_build_main_view : function() {
+        var html = '<div class="ER_Widget_Restore_from_Backup">';
+
+        html += '<button class="choose_file"></button>';
+        html += '<input class="inp_backup_file er_hidden" type="file">';
+        html += this._HTML_build_building_import_state();
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_building_import_state : function() {
+        return '<div class="stat_cont building_import_state_cont"><span class="title label"></span><span class="value">NOT STARTED</span></div>';
+    },
+
+    build_main_view : function(jq_parent) {
+        if(jq_parent)
+            this.jq_parent = jq_parent;
+
+        var html = this._HTML_build_main_view();
+        this.jq_main = $(html).appendTo(this.jq_parent);
+        this._add_handlers();
+    },
+
+    _add_handlers : function() {
+
+        this.jq_btn_choose_file = this.jq_main.find('button.choose_file');
+        this.jq_btn_choose_file.click(this._on_click_btn_choose_file.bind(this));
+        
+        this.jq_inp_backup_file = this.jq_main.find('.inp_backup_file');
+        er_backup_importer.set_jq_file_input_handlers(this.jq_inp_backup_file);
+
+        this.jq_building_import_state_value = this.jq_main.find('.building_import_state_cont .value');
+
+        window.addEventListener(
+            er_backup_importer.EVENT_BACKUP_SMALL_OBJ_IMPORTED,
+            this.on_EVENT_BACKUP_SMALL_OBJ_IMPORTED.bind(this),
+            false);
+
+    },
+
+    _set_btn_choose_file_as_started : function() {
+        this.jq_btn_choose_file.addClass('started');
+    },
+    _set_btn_choose_file_as_not_started : function() {
+        this.jq_btn_choose_file.removeClass('started');
+    },
+
+    is_widget_visible : function() {
+        return this.jq_main.height() > 0;
+    },
+
+    _on_click_btn_choose_file : function(event) {
+        if(this.jq_btn_choose_file.hasClass('started')) {
+            return;
+        } else {
+            var that = this;
+
+            var evtL = document.createEvent("CustomEvent");
+            evtL.initCustomEvent('EVENT_GET_LK_INFO', true, true,
+                function(license_info) {
+                    if (license_info.is_still_valid) {
+                        if (license_info.type == 'p') {
+
+                            er_main_view._info_popup_show(er_translator.get_text('ER_Widget_Restore_from_Backup','messages','not_for_this_license'));
+                        } else {
+                            that.jq_inp_backup_file.click();
+                        }
+                    }
+                });
+            window.dispatchEvent(evtL);
+        }
+    },
+
+    on_EVENT_BACKUP_SMALL_OBJ_IMPORTED : function(event) {
+        this.jq_building_import_state_value.text(event.detail);
+    },
+
+    _on_click_mode_after_collect_turn_on : function() {
+        this._on_click_btn_collect(null, true);
+    },
+};
+
+var er_backup_common_exporter = window.er_backup_common_exporter || {
+        build_object : function() {
+            var deferred = $.Deferred();
+            var obj = {};
+            obj.lc = this._build_lc();
+
+            this._build_db()
+                .then(function(db) {
+                    obj.db = db;
+                    deferred.resolve(obj);
+                });
+
+            return deferred.promise();
+        },
+        _build_lc : function() {
+            var lc = {};
+
+            lc.er_country_code = localStorage.er_country_code;
+            lc.er_is_new_style_page = localStorage.er_is_new_style_page;
+            lc.er_language_id = localStorage.er_language_id;
+            lc.er_main_view_is_collapsed = localStorage.er_main_view_is_collapsed;
+            lc.er_names_eng_to_rus = localStorage.er_names_eng_to_rus;
+            lc.er_names_rus_to_eng = localStorage.er_names_rus_to_eng;
+
+            return lc;
+        },
+        _build_db : function() {
+            var deferred = $.Deferred();
+            var db = {};
+
+            er_mini_profiles_db.get_all_profiles()
+                .then(function(mini_profiles) {
+                    db.mini_profiles = mini_profiles;
+                })
+                .then(er_sn_ids_map_db.get_all_maps.bind(er_sn_ids_map_db))
+                .then(function(sn_ids_maps) {
+                    db.sn_ids_maps = sn_ids_maps;
+                })
+                .then(function() {
+                    deferred.resolve(db);
+                });
+
+
+            return deferred.promise();
+        },
+    };
+/**
+ * Created by Alex on 14.03.2017.
+ */
+var er_backup_common_importer = window.er_backup_common_importer || {
+        import : function(obj) {
+            var deferred = $.Deferred();
+
+            var that = this;
+
+            if(!obj) {
+                er_logger.log('SKIPS : Common data missing');
+                deferred.resolve(true);
+                return deferred.promise();
+            }
+            this._import_db(obj.db)
+                .then(function() {
+                    that._import_lc(obj.lc);
+                    deferred.resolve(true);
+                });
+
+            return deferred.promise();
+        },
+
+        _import_db : function(db) {
+            var deferred = $.Deferred();
+
+            er_mini_profiles_db.push_profiles(db.mini_profiles)
+                .then(er_sn_ids_map_db.push_maps(db.sn_ids_maps))
+                .then(deferred.resolve.bind(deferred));
+
+            return deferred.promise();
+        },
+
+        _import_lc : function(lc) {
+            if(lc.er_country_code)
+                localStorage.er_country_code = lc.er_country_code;
+            else
+                delete localStorage.er_country_code;
+
+            if(lc.er_is_new_style_page)
+                localStorage.er_is_new_style_page = lc.er_is_new_style_page;
+            else
+                delete localStorage.er_is_new_style_page;
+
+            if(lc.er_language_id)
+                localStorage.er_language_id = lc.er_language_id;
+            else
+                delete localStorage.er_language_id;
+
+            if(lc.er_main_view_is_collapsed)
+                localStorage.er_main_view_is_collapsed = lc.er_main_view_is_collapsed;
+            else
+                delete localStorage.er_main_view_is_collapsed;
+
+            if(lc.er_names_eng_to_rus)
+                localStorage.er_names_eng_to_rus = lc.er_names_eng_to_rus;
+            else
+                delete localStorage.er_names_eng_to_rus;
+
+            if(lc.er_names_rus_to_eng)
+                localStorage.er_names_rus_to_eng = lc.er_names_rus_to_eng;
+            else
+                delete localStorage.er_names_rus_to_eng;
+        },
+    };
+/**
+ * Created by Alex on 12.03.2017.
+ */
+var er_backup_exporter = window.er_backup_exporter || {
+        EVENT_BACKUP_SMALL_OBJ_GENERATED : 'ER_EVENT_BACKUP_SMALL_OBJ_GENERATED',
+
+        MODES : {
+            all : {id : 'all', name : 'All'},
+            all_without_profiles : {id : 'all_without_profiles', name : 'All without profiles'},
+            profiles_list : {id : 'profiles_list', name : 'Profiles list'},
+        },
+
+        build_file : function(mode, options) {
+            var deferred = $.Deferred();
+
+            if(!mode)
+                mode = this.MODES.all.id;
+
+            var that = this;
+
+            this._build_object(mode, options)
+                .then(function(obj) {
+                    //var text = btoa(JSON.stringify(obj));
+                    var text = that._ug(JSON.stringify(obj));
+                    var name = 'LH_Backup_' + er_utils.datetimeJSToServer(new Date) + '.txt';
+                    name = name.replace(/:/g, "-").replace(/-/g, "_").replace(/ /g, "_");
+                    that._download(name, text);
+
+                    that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('DONE!');
+                    deferred.resolve();
+                });
+
+            return deferred.promise();
+        },
+
+        _build_object : function(mode, options) {
+            var deferred = $.Deferred();
+
+            if(!mode)
+                mode = this.MODES.all.id;
+
+            this._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('Building ! ! !');
+
+            var obj = {};
+            obj.export_mode = mode;
+            obj.created = (new Date()).getTime();
+
+            var that = this;
+
+            if(mode == this.MODES.profiles_list.id) {
+                er_profiles_extractor_backup_export.build_object_for_list(options.list_id)
+                    .then(function(profiles_extractor) {
+                        obj.profiles_extractor = profiles_extractor;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
+                    })
+                    .then(function() {
+                        deferred.resolve(obj);
+                    });
+            } else {
+                er_backup_common_exporter.build_object()
+                    .then(function(common) {
+                        obj.common = common;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('GENERAL DATA EXPORTED');
+                    })
+                    .then(er_broadcast_backup_export.build_object.bind(er_broadcast_backup_export))
+                    .then(function(broadcasts) {
+                        obj.broadcasts = broadcasts;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('BROADCASTS EXPORTED');
+                    })
+                    .then(er_autovisitor_backup_export.build_object.bind(er_autovisitor_backup_export))
+                    .then(function(autovisitors) {
+                        obj.autovisitors = autovisitors;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('AUTO-VISIT LISTS EXPORTED');
+                    })
+                    .then(er_connect_in_search_backup_export.build_object.bind(er_connect_in_search_backup_export))
+                    .then(function(connect_in_search) {
+                        obj.connect_in_search = connect_in_search;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('CONNECT IN SEARCH INFO EXPORTED');
+                    })
+                    .then(er_connect_selected_backup_export.build_object.bind(er_connect_selected_backup_export))
+                    .then(function(connect_selected) {
+                        obj.connect_selected = connect_selected;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('Connect,Select & Invite INFO EXPORTED');
+                    })
+                    .then(er_endorse_backup_export.build_object.bind(er_endorse_backup_export))
+                    .then(function(endorse) {
+                        obj.endorse = endorse;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('ENDORSEMENTS EXPORTED');
+                    })
+                    .then(er_user_signature_backup_export.build_object.bind(er_user_signature_backup_export))
+                    .then(function(user_signature) {
+                        obj.user_signature = user_signature;
+                        that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('USER SIGNATURE EXPORTED');
+                    })
+                    .then(function() {
+                        if(mode == that.MODES.all_without_profiles.id) {
+                            return;
+                        } else {
+                            return er_profiles_extractor_backup_export.build_object()
+                                .then(function(profiles_extractor) {
+                                    obj.profiles_extractor = profiles_extractor;
+                                    that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
+                                })
+                        }
+                    })
+                    /*.then(er_profiles_extractor_backup_export.build_object.bind(er_profiles_extractor_backup_export))
+                     .then(function(profiles_extractor) {
+                     obj.profiles_extractor = profiles_extractor;
+                     that._send_EVENT_BACKUP_SMALL_OBJ_GENERATED('PROFILES EXTRACTOR EXPORTED');
+                     })*/
+                    .then(function() {
+                        deferred.resolve(obj);
+                    });
+            }
+
+
+
+            return deferred.promise();
+        },
+        _send_EVENT_BACKUP_SMALL_OBJ_GENERATED : function(message) {
+            var evt = document.createEvent("CustomEvent");
+            evt.initCustomEvent(this.EVENT_BACKUP_SMALL_OBJ_GENERATED, true, true, message);
+            window.dispatchEvent(evt);
+        },
+
+        _download : function(filename, text) {
+            er_utils_file.export_file(filename, text, 'text');
+        },
+        _ug : function(text) {
+            var func_revers = function(str) {
+                var revers = '';
+                for(var i=str.length-1; i>=0; i--) {
+                    revers += str[i];
+                }
+
+                return revers;
+            };
+            text = func_revers(text);
+
+            var pos = er_utils.getRandomInt(2,9);
+            var t_1 = text.substring(0, pos-1);
+            var t_2 = text.substring(pos-1);
+            text = pos + t_1 + ':' + t_2;
+            return text;
+        },
+
+
+
+    };
+/**
+ * Created by Alex on 16.03.2017.
+ */
+var er_backup_importer = window.er_backup_importer || {
+        EVENT_BACKUP_SMALL_OBJ_IMPORTED : 'ER_EVENT_BACKUP_SMALL_OBJ_IMPORTED',
+
+        set_jq_file_input_handlers : function(jq_file_input) {
+            var domElem = jq_file_input[0];
+            domElem.addEventListener('change', this.on_jq_file_input_change.bind(this), false);
+        },
+        on_jq_file_input_change : function(event) {
+            var file = event.target.files[0];
+
+            var reader = new FileReader();
+
+            var that = this;
+
+            // Closure to capture the file information.
+            reader.onload = (function(theFile) {
+                return function(event) {
+                    var text = event.target.result;
+                    that._import_from_text(text)
+                        .then(function() {
+                            window.location.reload();
+                        });
+                };
+            })(file);
+
+            reader.readAsText(file);
+        },
+
+        _import_from_text : function(text) {
+            var obj;
+            try {
+                //obj = JSON.parse(atob(text));
+                obj = JSON.parse(this._uug(text));
+                this._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FILE PARSED');
+            } catch (error) {
+                er_logger.log(error);
+                this._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PARSE FILE ERROR');
+
+                var deferred = $.Deferred();
+                deferred.reject();
+                return deferred.promise();
+            }
+            return this._import_object(obj);
+        },
+
+        _import_object : function(obj) {
+            var deferred = $.Deferred();
+
+            var that = this;
+
+            if(!obj.export_mode)
+                obj.export_mode = er_backup_exporter.MODES.all.id;
+
+            if(obj.export_mode == er_backup_exporter.MODES.profiles_list.id) {
+                that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('Importing Profiles List');
+                er_profiles_extractor_backup_import.import_list(obj.profiles_extractor)
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PROFILES LIST IMPORTED');
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FINISHED');
+                        deferred.resolve();
+                    });
+            } else {
+                er_backup_common_importer.import(obj.common)
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('COMMON DATA IMPORTED');
+                    })
+                    .then(function() {
+                        return er_broadcast_backup_import.import(obj.broadcasts);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('BROADCASTS IMPORTED');
+                    })
+                    .then(function() {
+                        return er_autovisitor_backup_import.import(obj.autovisitors);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('AUTO-VISIT LISTS IMPORTED');
+                    })
+                    .then(function() {
+                        return er_connect_in_search_backup_import.import(obj.connect_in_search);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('CONNECT IN SEARCH INFO IMPORTED');
+                    })
+                    .then(function() {
+                        return er_connect_selected_backup_import.import(obj.connect_selected);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('Connect,Select & Invite INFO IMPORTED');
+                    })
+                    .then(function() {
+                        return er_endorse_backup_import.import(obj.endorse);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('ENDORSEMENTS IMPORTED');
+                    })
+                    .then(function() {
+                        return er_user_signature_backup_import.import(obj.user_signature);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('USER SIGNATURE IMPORTED');
+                    })
+                    .then(function() {
+                        return er_profiles_extractor_backup_import.import(obj.profiles_extractor);
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('PROFILES EXTRACTOR IMPORTED');
+                    })
+                    .then(function() {
+                        that._send_EVENT_BACKUP_SMALL_OBJ_IMPORTED('FINISHED');
+                        deferred.resolve();
+                    });
+            }
+
+
+            return deferred.promise();
+        },
+        _send_EVENT_BACKUP_SMALL_OBJ_IMPORTED : function(message) {
+            var evt = document.createEvent("CustomEvent");
+            evt.initCustomEvent(this.EVENT_BACKUP_SMALL_OBJ_IMPORTED, true, true, message);
+            window.dispatchEvent(evt);
+        },
+
+        _uug : function(text) {
+            var func_revers = function(str) {
+                var revers = '';
+                for(var i=str.length-1; i>=0; i--) {
+                    revers += str[i];
+                }
+
+                return revers;
+            };
+
+            pos = Number(text[0]);
+            var t_1 = text.substring(1, pos);
+            var t_2 = text.substring(pos+1);
+            var t = t_1+t_2;
+            t = func_revers(t);
+            return t;
+        },
+    };
+/**
+ * Created by Alex on 16.03.2017.
+ */
+var er_backup_view = window.er_backup_view || {
+        type : 'er_backup_view',
+        tittle : 'Backup',
+
+        init_main : function() {
+            if (this.inited)
+                return;
+
+            this.jq_main = $(this._HTML_build_main());
+
+            this._add_handlers();
+
+            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
+                //er_main_view.show_settings(this.type);
+
+            this.inited = true;
+        },
+        _HTML_build_main : function() {
+            var html = '<div class="er_sub_view '+this.type+'">';
+
+            html += this._HTML_build_tabs_pannel();
+
+            html += this._HTML_build_content_backup();
+            html += this._HTML_build_content_restore();
+
+            html += '</div>';
+            return html;
+        },
+        _HTML_build_tabs_pannel : function() {
+            var html = '<div class="tabs_pannel">';
+
+            html += '<span class="tab set" data-tab="backup"></span>';
+            html += '<span class="tab" data-tab="restore"></span>';
+
+            html += '</div>';
+
+            return html;
+        },
+
+        _HTML_build_content_backup : function() {
+            var html = '<div class="content set" data-type="backup">';
+            html += '</div>';
+            return html;
+        },
+        _HTML_build_content_restore : function() {
+            var html = '<div class="content" data-type="restore">';
+            html += '</div>';
+            return html;
+        },
+
+        _add_handlers : function() {
+            /*new ER_Widget_How_To({
+                jq_parent : this.jq_main,
+                links : [ER_Widget_How_To.links.er_backup_view]
+            });*/
+
+            this.jq_main.children('.tabs_pannel').children('.tab').click(this._on_click_tab.bind(this));
+
+            var jq_content_backup = this.jq_main.find('.content[data-type=backup]');
+            var jq_content_restore = this.jq_main.find('.content[data-type=restore]');
+
+            this.er_Widget_Backup_Download = new ER_Widget_Backup_Download({
+                jq_parent : jq_content_backup
+            });
+
+            this.er_Widget_Restore_from_Backup = new ER_Widget_Restore_from_Backup({
+                jq_parent : jq_content_restore
+            });
+        },
+
+        _on_main_view_ready_for_sub_view : function() {
+            this.init_main();
+        },
+        _on_click_tab : function(event) {
+            var jq_tab = $(event.target);
+            if(jq_tab.hasClass('set'))
+                return;
+
+            jq_tab.siblings('.tab.set').removeClass('set');
+            this.jq_main.children('.content.set').removeClass('set');
+
+            jq_tab.addClass('set');
+            this.jq_main.children('.content[data-type='+jq_tab.attr('data-tab')+']').addClass('set');
+        },
+    };
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_backup_view._on_main_view_ready_for_sub_view() });
+/**
  * Created by erinsasha on 22/02/17.
  */
 var er_autovisitor_db = window.er_autovisitor_db || {
@@ -24119,264 +24119,6 @@ var er_sn_ids_map_db = window.er_sn_ids_map_db || {
 
             return result;
         },
-    };
-/**
- * Created by erinsasha on 11/01/17.
- */
-var er_debug = window.er_debug || {
-        EVENT_LOG_UPDATED : 'ER_EVENT_LOG_UPDATED',
-
-        is_inited : false,
-        is_switched_on : false,
-        is_persisted_on : false,
-        original_log : null,
-        original_error : null,
-        log : [],
-        max_log_length : 10000,
-        max_persist_log_length : 500000,
-        curr_pos : 0,
-
-        init : function() {
-            if(this.is_inited)
-                return;
-
-            var state = this.get_debug_state();
-            if (state) {
-                this.switch_on();
-            }
-
-            this.is_inited = true;
-        },
-        get_debug_state : function() {
-            if (localStorage.er_debug == 'true')
-                return true;
-            else
-                return false;
-        },
-        set_debug_state : function(value) {
-            if (value) {
-                localStorage.er_debug = 'true';
-                this.switch_on();
-            } else {
-                localStorage.er_debug = 'false';
-                this.switch_off();
-            }
-        },
-        get_persist_state : function() {
-            if (localStorage.er_persist_log_state == 'true')
-                return true;
-            else
-                return false;
-        },
-        set_persist_state : function(value) {
-            if (value) {
-                localStorage.er_persist_log_state = 'true';
-                this.switch_on();
-            } else {
-                localStorage.er_persist_log_state = 'false';
-                this.switch_off();
-            }
-        },
-        get_persist_log : function() {
-            var l = localStorage.er_persist_log;
-            l = l ? l : '';
-            return l;
-        },
-        clear_persist_log : function() {
-            localStorage.er_persist_log = '';
-        },
-        add_record_persist_log : function(str) {
-            var log = this.get_persist_log();
-            log = log + '\n' + str;
-            if(log.length > this.max_persist_log_length) {
-                log = log.substr(log.length - this.max_persist_log_length + 1);
-            }
-            localStorage.er_persist_log = log;
-        },
-        switch_on : function() {
-            if (this.is_switched_on)
-                return;
-
-            var that = this;
-            this.original_log = console.log;
-            this.original_error = console.error;
-
-
-            console.log = function(val) {
-                that.add_to_log(val);
-                that.original_log.apply(console, arguments);
-            };
-
-            console.error = function(val) {
-                that.add_to_log(val);
-                that.original_error.apply(console, arguments);
-            };
-
-            this.is_switched_on = true;
-        },
-        switch_off : function() {
-            if (!this.is_switched_on)
-                return;
-
-            console.log = this.original_log;
-            console.error = this.original_error;
-
-            this.is_switched_on = false;
-        },
-        add_to_log : function(value) {
-            try {
-                var val_str = JSON.stringify(value);
-                if(this.get_persist_state())
-                    this.add_record_persist_log(val_str);
-                this.log[this.curr_pos] = val_str;
-                ++this.curr_pos;
-                var delta = this.log.length - this.curr_pos - this.max_log_length;
-                if(delta >= 0) {
-                    delete this.log[delta];
-                }
-
-                var evt = document.createEvent("CustomEvent");
-                evt.initCustomEvent(this.EVENT_LOG_UPDATED, true, true, value);
-                window.dispatchEvent(evt);
-            } catch(error) {
-                this.original_log.apply(console, value);
-            }
-        },
-        get_log_as_string : function() {
-            var delta = this.log.length - this.curr_pos - this.max_log_length;
-            if(delta >= 0) {
-                delete this.log[delta];
-            }
-            delta = delta < 0 ? 0 : delta;
-            var result = '';
-            for(var i = delta; i<this.log.length; i++) {
-                result += this.log[i] + '\n';
-            }
-
-            return result;
-        },
-        get_log : function() {
-            if(this.get_persist_state())
-                return this.get_persist_log();
-            else
-                return this.get_log_as_string();
-        },
-
-        export_log_as_file : function() {
-            var name = 'LH_Log_' + er_utils.datetimeJSToServer(new Date) + '.log';
-            er_utils_file.export_file(name, this.get_log(), 'text');
-        },
-    };
-/**
- * Created by erinsasha on 11/01/17.
- */
-var er_debug_view = window.er_debug_view || {
-        type : 'er_debug_view',
-        tittle : 'Debug',
-
-        jq_main : null,
-
-        init_main : function() {
-            if (this.inited)
-                return;
-
-            this.jq_main = $(this._HTML_build_main());
-
-            this.jq_select_mode = this.jq_main.find('.select_mode');
-            this.jq_log = this.jq_main.find('.log');
-            this.jq_eval_text = this.jq_main.find('.eval_text');
-            this.jq_btn_eval = this.jq_main.find('.btn_eval');
-            this.jq_btn_download = this.jq_main.find('.btn_download');
-
-            this._add_handlers();
-            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-
-            this.inited = true;
-        },
-        _HTML_build_main : function() {
-            var html = '<div class="er_sub_view '+this.type+'">';
-
-            html += this._HTML_build_mode_selector();
-            html += '<textarea class="log"></textarea>';
-            html += '<button class="btn_download">Download Log</button>';
-            html += '<textarea class="eval_text"></textarea>';
-            html += '<button class="btn_eval">Eval</button>';
-
-            html += '</div>';
-            return html;
-        },
-        _HTML_build_mode_selector : function() {
-            var html = '<div class="mode_selector_cont er_label_input_cont">';
-
-            html += '<span class="label">Debug mode</span>';
-
-            html += '<select class="select_mode">';
-
-            var selected_off = '', selected_on = '', selected_on_persistent = '';
-            if(er_debug.get_debug_state()) {
-                if(er_debug.get_persist_state()) {
-                    selected_on_persistent = 'selected';
-                } else {
-                    selected_on = 'selected';
-                }
-            } else {
-                selected_off = 'selected';
-            }
-            html += '<option value="off" '+selected_off+'>off</option>';
-            html += '<option value="on" '+selected_on+'>on</option>';
-            html += '<option value="on_persistent" '+selected_on_persistent+'>on persistent</option>';
-
-            html += '</select>';
-
-            html += '</div>';
-
-            return html;
-        },
-
-        _add_handlers : function() {
-            this.jq_select_mode.change(this._on_change_this_select_mode.bind(this));
-
-            window.addEventListener(
-                er_debug.EVENT_LOG_UPDATED,
-                this._on_log_updated.bind(this),
-                false);
-
-            this.jq_btn_eval.click(this._on_btn_eval_click.bind(this));
-            this.jq_btn_download.click(this._on_btn_download.bind(this));
-        },
-
-        _on_main_view_ready_for_sub_view : function() {
-            this.init_main();
-        },
-
-        _on_change_this_select_mode : function(event) {
-            var jq_option = this.jq_select_mode.find('option:selected');
-            var state = jq_option.attr('value');
-            er_debug.set_persist_state(state == 'on_persistent');
-            er_debug.set_debug_state(state == 'on' || state == 'on_persistent');
-        },
-        _on_log_updated : function() {
-            this.jq_log.val(er_debug.get_log());
-            this.jq_log.scrollTop(this.jq_log[0].scrollHeight - this.jq_log.height());
-        },
-        _on_btn_eval_click : function() {
-            eval(this.jq_eval_text.val());
-        },
-        _on_btn_download : function() {
-            er_debug.export_log_as_file();
-        },
-    };
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_debug_view._on_main_view_ready_for_sub_view() });
-/**
- * Created by Alex on 15.03.2017.
- */
-var er_logger = window.er_logger || {
-        log : function() {
-            if (er_debug.get_debug_state()) {
-                console.log(er_utils.datetimeJSToServer(new Date()));
-                console.log.apply(console, arguments);
-            }
-        }
     };
 /**
  * Created by erinsasha on 01/03/17.
@@ -27297,6 +27039,264 @@ var er_connect_selected_view = window.er_connect_selected_view || {
         },
     };
 document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_connect_selected_view._on_main_view_ready_for_sub_view() });
+/**
+ * Created by erinsasha on 11/01/17.
+ */
+var er_debug = window.er_debug || {
+        EVENT_LOG_UPDATED : 'ER_EVENT_LOG_UPDATED',
+
+        is_inited : false,
+        is_switched_on : false,
+        is_persisted_on : false,
+        original_log : null,
+        original_error : null,
+        log : [],
+        max_log_length : 10000,
+        max_persist_log_length : 500000,
+        curr_pos : 0,
+
+        init : function() {
+            if(this.is_inited)
+                return;
+
+            var state = this.get_debug_state();
+            if (state) {
+                this.switch_on();
+            }
+
+            this.is_inited = true;
+        },
+        get_debug_state : function() {
+            if (localStorage.er_debug == 'true')
+                return true;
+            else
+                return false;
+        },
+        set_debug_state : function(value) {
+            if (value) {
+                localStorage.er_debug = 'true';
+                this.switch_on();
+            } else {
+                localStorage.er_debug = 'false';
+                this.switch_off();
+            }
+        },
+        get_persist_state : function() {
+            if (localStorage.er_persist_log_state == 'true')
+                return true;
+            else
+                return false;
+        },
+        set_persist_state : function(value) {
+            if (value) {
+                localStorage.er_persist_log_state = 'true';
+                this.switch_on();
+            } else {
+                localStorage.er_persist_log_state = 'false';
+                this.switch_off();
+            }
+        },
+        get_persist_log : function() {
+            var l = localStorage.er_persist_log;
+            l = l ? l : '';
+            return l;
+        },
+        clear_persist_log : function() {
+            localStorage.er_persist_log = '';
+        },
+        add_record_persist_log : function(str) {
+            var log = this.get_persist_log();
+            log = log + '\n' + str;
+            if(log.length > this.max_persist_log_length) {
+                log = log.substr(log.length - this.max_persist_log_length + 1);
+            }
+            localStorage.er_persist_log = log;
+        },
+        switch_on : function() {
+            if (this.is_switched_on)
+                return;
+
+            var that = this;
+            this.original_log = console.log;
+            this.original_error = console.error;
+
+
+            console.log = function(val) {
+                that.add_to_log(val);
+                that.original_log.apply(console, arguments);
+            };
+
+            console.error = function(val) {
+                that.add_to_log(val);
+                that.original_error.apply(console, arguments);
+            };
+
+            this.is_switched_on = true;
+        },
+        switch_off : function() {
+            if (!this.is_switched_on)
+                return;
+
+            console.log = this.original_log;
+            console.error = this.original_error;
+
+            this.is_switched_on = false;
+        },
+        add_to_log : function(value) {
+            try {
+                var val_str = JSON.stringify(value);
+                if(this.get_persist_state())
+                    this.add_record_persist_log(val_str);
+                this.log[this.curr_pos] = val_str;
+                ++this.curr_pos;
+                var delta = this.log.length - this.curr_pos - this.max_log_length;
+                if(delta >= 0) {
+                    delete this.log[delta];
+                }
+
+                var evt = document.createEvent("CustomEvent");
+                evt.initCustomEvent(this.EVENT_LOG_UPDATED, true, true, value);
+                window.dispatchEvent(evt);
+            } catch(error) {
+                this.original_log.apply(console, value);
+            }
+        },
+        get_log_as_string : function() {
+            var delta = this.log.length - this.curr_pos - this.max_log_length;
+            if(delta >= 0) {
+                delete this.log[delta];
+            }
+            delta = delta < 0 ? 0 : delta;
+            var result = '';
+            for(var i = delta; i<this.log.length; i++) {
+                result += this.log[i] + '\n';
+            }
+
+            return result;
+        },
+        get_log : function() {
+            if(this.get_persist_state())
+                return this.get_persist_log();
+            else
+                return this.get_log_as_string();
+        },
+
+        export_log_as_file : function() {
+            var name = 'LH_Log_' + er_utils.datetimeJSToServer(new Date) + '.log';
+            er_utils_file.export_file(name, this.get_log(), 'text');
+        },
+    };
+/**
+ * Created by erinsasha on 11/01/17.
+ */
+var er_debug_view = window.er_debug_view || {
+        type : 'er_debug_view',
+        tittle : 'Debug',
+
+        jq_main : null,
+
+        init_main : function() {
+            if (this.inited)
+                return;
+
+            this.jq_main = $(this._HTML_build_main());
+
+            this.jq_select_mode = this.jq_main.find('.select_mode');
+            this.jq_log = this.jq_main.find('.log');
+            this.jq_eval_text = this.jq_main.find('.eval_text');
+            this.jq_btn_eval = this.jq_main.find('.btn_eval');
+            this.jq_btn_download = this.jq_main.find('.btn_download');
+
+            this._add_handlers();
+            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
+
+            this.inited = true;
+        },
+        _HTML_build_main : function() {
+            var html = '<div class="er_sub_view '+this.type+'">';
+
+            html += this._HTML_build_mode_selector();
+            html += '<textarea class="log"></textarea>';
+            html += '<button class="btn_download">Download Log</button>';
+            html += '<textarea class="eval_text"></textarea>';
+            html += '<button class="btn_eval">Eval</button>';
+
+            html += '</div>';
+            return html;
+        },
+        _HTML_build_mode_selector : function() {
+            var html = '<div class="mode_selector_cont er_label_input_cont">';
+
+            html += '<span class="label">Debug mode</span>';
+
+            html += '<select class="select_mode">';
+
+            var selected_off = '', selected_on = '', selected_on_persistent = '';
+            if(er_debug.get_debug_state()) {
+                if(er_debug.get_persist_state()) {
+                    selected_on_persistent = 'selected';
+                } else {
+                    selected_on = 'selected';
+                }
+            } else {
+                selected_off = 'selected';
+            }
+            html += '<option value="off" '+selected_off+'>off</option>';
+            html += '<option value="on" '+selected_on+'>on</option>';
+            html += '<option value="on_persistent" '+selected_on_persistent+'>on persistent</option>';
+
+            html += '</select>';
+
+            html += '</div>';
+
+            return html;
+        },
+
+        _add_handlers : function() {
+            this.jq_select_mode.change(this._on_change_this_select_mode.bind(this));
+
+            window.addEventListener(
+                er_debug.EVENT_LOG_UPDATED,
+                this._on_log_updated.bind(this),
+                false);
+
+            this.jq_btn_eval.click(this._on_btn_eval_click.bind(this));
+            this.jq_btn_download.click(this._on_btn_download.bind(this));
+        },
+
+        _on_main_view_ready_for_sub_view : function() {
+            this.init_main();
+        },
+
+        _on_change_this_select_mode : function(event) {
+            var jq_option = this.jq_select_mode.find('option:selected');
+            var state = jq_option.attr('value');
+            er_debug.set_persist_state(state == 'on_persistent');
+            er_debug.set_debug_state(state == 'on' || state == 'on_persistent');
+        },
+        _on_log_updated : function() {
+            this.jq_log.val(er_debug.get_log());
+            this.jq_log.scrollTop(this.jq_log[0].scrollHeight - this.jq_log.height());
+        },
+        _on_btn_eval_click : function() {
+            eval(this.jq_eval_text.val());
+        },
+        _on_btn_download : function() {
+            er_debug.export_log_as_file();
+        },
+    };
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_debug_view._on_main_view_ready_for_sub_view() });
+/**
+ * Created by Alex on 15.03.2017.
+ */
+var er_logger = window.er_logger || {
+        log : function() {
+            if (er_debug.get_debug_state()) {
+                console.log(er_utils.datetimeJSToServer(new Date()));
+                console.log.apply(console, arguments);
+            }
+        }
+    };
 /**
  * Created by erinsasha on 17/05/17.
  */
@@ -31211,6 +31211,141 @@ er_gen_settings_view = window.er_gen_settings_view || {
 document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_gen_settings_view._on_main_view_ready_for_sub_view() });
 
 /**
+ * Created by erinsasha on 15/08/17.
+ */
+
+/**
+ *
+ * @param options
+ * @param options.jq_parent
+ * @constructor
+ */
+function ER_W_Login_Status(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+    
+    this._process();
+}
+
+ER_W_Login_Status.prototype = {
+    _process : function() {
+        this._build();
+        if(erlh_curr_user.is_logged_in())
+            this._request_current_install_id();
+    },
+
+    _build_HTML : function() {
+        var status_html;
+        if(erlh_curr_user.is_logged_in())
+            status_html = 'er_logged_in';
+        else
+            status_html = 'er_logged_out';
+
+        var html = '<div class="ER_W_Login_Status '+status_html+'">';
+        html += this._build_HTML_logged_in_as();
+        html += this._build_HTML_login_create_account();
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_logged_in_as : function() {
+        var email;
+        if(erlh_curr_user.is_logged_in())
+            email = erlh_curr_user.user.email;
+        else
+            email = '';
+
+        return '<span class="er_logged_in_as">'+email+'</span>';
+    },
+    _build_HTML_login_create_account : function() {
+        return '<span class="er_login_create_account"><span class="er_login">Login</span> | <span class="er_create_account">Create account</span></span>';
+    },
+    _build_HTML_installation_id : function(id) {
+        return '<span class="er_installation_id_cont"> | Inst. ID : <span class="er_inst_id">'+id+'</span></span>';
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        this._add_handlers();
+    },
+    create_installation_id : function(id) {
+        if((!id || id == "") || this.jq_main.find('.er_installation_id_cont').length > 0)
+            return;
+
+        this.jq_main.append(this._build_HTML_installation_id(id));
+    },
+
+    _add_handlers : function() {
+        this.jq_main.find('.er_logged_in_as').click(this._on_click_logged_in_as.bind(this));
+        var jq_login_create_account = this.jq_main.children('.er_login_create_account');
+        jq_login_create_account.find('.er_login').click(this._on_click_login.bind(this));
+        jq_login_create_account.find('.er_create_account').click(this._on_click_create_account.bind(this));
+
+        window.addEventListener(
+            erlh_curr_user.EVENT_USER_LOGGED_IN,
+            this._on_EVENT_USER_LOGGED_IN.bind(this),
+            false);
+
+        window.addEventListener(
+            erlh_curr_user.EVENT_USER_LOGGED_OFF,
+            this._on_EVENT_USER_LOGGED_OFF.bind(this),
+            false);
+
+        window.addEventListener(
+            'EVENT_PUBLIC_KEY_REGISTERED',
+            this._on_EVENT_PUBLIC_KEY_REGISTERED.bind(this),
+            false);
+    },
+    _request_current_install_id : function() {
+        var evtL = document.createEvent("CustomEvent");
+        evtL.initCustomEvent('ER_EVENT_GET_INSTALL_ID', true, true,
+            this._callback_on_get_current_install_id.bind(this));
+        window.dispatchEvent(evtL);
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+    _on_change : function() {
+
+    },
+    _on_EVENT_USER_LOGGED_IN : function() {
+        this.jq_main.find('.er_logged_in_as').text(erlh_curr_user.user.email);
+        this.jq_main.removeClass('er_logged_out');
+        this.jq_main.addClass('er_logged_in');
+
+        this._request_current_install_id();
+    },
+    _on_EVENT_USER_LOGGED_OFF : function() {
+        this.jq_main.find('.er_logged_in_as').text('');
+        this.jq_main.addClass('er_logged_out');
+        this.jq_main.removeClass('er_logged_in');
+    },
+    _on_EVENT_PUBLIC_KEY_REGISTERED : function() {
+        this._request_current_install_id();
+    },
+    _on_click_logged_in_as : function(event) {
+        erlh_main.show();
+        event.stopPropagation();
+    },
+    _on_click_login : function(event) {
+        erlh_main.show({show_login_first : true});
+        event.stopPropagation();
+    },
+    _on_click_create_account : function(event) {
+        erlh_main.show({show_login_first : false});
+        event.stopPropagation();
+    },
+    _callback_on_get_current_install_id : function(id) {
+        this.create_installation_id(id);
+    },
+};
+/**
  * Created by erinsasha on 15/06/17.
  */
 /**
@@ -32858,140 +32993,55 @@ Reattach_License_To_Current_PC.prototype = {
     }
 };
 /**
- * Created by erinsasha on 15/08/17.
+ * Created by erinsasha on 07/06/17.
  */
 
-/**
- *
- * @param options
- * @param options.jq_parent
- * @constructor
- */
-function ER_W_Login_Status(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
+er_my_account_view = window.er_my_account_view || {
+        type : 'er_my_account',
+        tittle : 'My Account (Linked Helper)',
 
-    this.options = options;
-    
-    this._process();
-}
+        jq_main : null,
 
-ER_W_Login_Status.prototype = {
-    _process : function() {
-        this._build();
-        if(erlh_curr_user.is_logged_in())
-            this._request_current_install_id();
-    },
+        jq_select_language : null, // Селектор выбора языка
 
-    _build_HTML : function() {
-        var status_html;
-        if(erlh_curr_user.is_logged_in())
-            status_html = 'er_logged_in';
-        else
-            status_html = 'er_logged_out';
+        init_main : function() {
+            if (this.inited)
+                return;
 
-        var html = '<div class="ER_W_Login_Status '+status_html+'">';
-        html += this._build_HTML_logged_in_as();
-        html += this._build_HTML_login_create_account();
-        html += '</div>';
+            this.jq_main = $(this._HTML_build_main());
 
-        return html;
-    },
-    _build_HTML_logged_in_as : function() {
-        var email;
-        if(erlh_curr_user.is_logged_in())
-            email = erlh_curr_user.user.email;
-        else
-            email = '';
+            this._add_handlers();
+            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
 
-        return '<span class="er_logged_in_as">'+email+'</span>';
-    },
-    _build_HTML_login_create_account : function() {
-        return '<span class="er_login_create_account"><span class="er_login">Login</span> | <span class="er_create_account">Create account</span></span>';
-    },
-    _build_HTML_installation_id : function(id) {
-        return '<span class="er_installation_id_cont"> | Inst. ID : <span class="er_inst_id">'+id+'</span></span>';
-    },
+            this.inited = true;
+        },
+        _HTML_build_main : function() {
+            var html = '<div class="er_sub_view '+this.type+'">';
 
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
+            html += '</div>';
+            return html;
+        },
 
-        this._add_handlers();
-    },
-    create_installation_id : function(id) {
-        if((!id || id == "") || this.jq_main.find('.er_installation_id_cont').length > 0)
-            return;
+        _add_handlers : function() {
+            window.addEventListener(
+                er_main_view.EVENT_MAIN_VIEW_SETTINGS_SHOW,
+                this._on_EVENT_MAIN_VIEW_SETTINGS_SHOW.bind(this));
+        },
 
-        this.jq_main.append(this._build_HTML_installation_id(id));
-    },
+        _on_main_view_ready_for_sub_view : function() {
+            this.init_main();
+        },
 
-    _add_handlers : function() {
-        this.jq_main.find('.er_logged_in_as').click(this._on_click_logged_in_as.bind(this));
-        var jq_login_create_account = this.jq_main.children('.er_login_create_account');
-        jq_login_create_account.find('.er_login').click(this._on_click_login.bind(this));
-        jq_login_create_account.find('.er_create_account').click(this._on_click_create_account.bind(this));
+        _on_EVENT_MAIN_VIEW_SETTINGS_SHOW : function(event) {
+            if(event.detail != this.type)
+                return;
 
-        window.addEventListener(
-            erlh_curr_user.EVENT_USER_LOGGED_IN,
-            this._on_EVENT_USER_LOGGED_IN.bind(this),
-            false);
+            erlh_main.show();
+            er_main_view.show_settings('none');
+        }
+    };
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_my_account_view._on_main_view_ready_for_sub_view() });
 
-        window.addEventListener(
-            erlh_curr_user.EVENT_USER_LOGGED_OFF,
-            this._on_EVENT_USER_LOGGED_OFF.bind(this),
-            false);
-
-        window.addEventListener(
-            'EVENT_PUBLIC_KEY_REGISTERED',
-            this._on_EVENT_PUBLIC_KEY_REGISTERED.bind(this),
-            false);
-    },
-    _request_current_install_id : function() {
-        var evtL = document.createEvent("CustomEvent");
-        evtL.initCustomEvent('ER_EVENT_GET_INSTALL_ID', true, true,
-            this._callback_on_get_current_install_id.bind(this));
-        window.dispatchEvent(evtL);
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-    _on_change : function() {
-
-    },
-    _on_EVENT_USER_LOGGED_IN : function() {
-        this.jq_main.find('.er_logged_in_as').text(erlh_curr_user.user.email);
-        this.jq_main.removeClass('er_logged_out');
-        this.jq_main.addClass('er_logged_in');
-
-        this._request_current_install_id();
-    },
-    _on_EVENT_USER_LOGGED_OFF : function() {
-        this.jq_main.find('.er_logged_in_as').text('');
-        this.jq_main.addClass('er_logged_out');
-        this.jq_main.removeClass('er_logged_in');
-    },
-    _on_EVENT_PUBLIC_KEY_REGISTERED : function() {
-        this._request_current_install_id();
-    },
-    _on_click_logged_in_as : function(event) {
-        erlh_main.show();
-        event.stopPropagation();
-    },
-    _on_click_login : function(event) {
-        erlh_main.show({show_login_first : true});
-        event.stopPropagation();
-    },
-    _on_click_create_account : function(event) {
-        erlh_main.show({show_login_first : false});
-        event.stopPropagation();
-    },
-    _callback_on_get_current_install_id : function(id) {
-        this.create_installation_id(id);
-    },
-};
 /**
  * Created by erinsasha on 11/05/17.
  */
@@ -37736,56 +37786,6 @@ ER_Widget_New_Broadcast.prototype = {
 
 };
 /**
- * Created by erinsasha on 07/06/17.
- */
-
-er_my_account_view = window.er_my_account_view || {
-        type : 'er_my_account',
-        tittle : 'My Account (Linked Helper)',
-
-        jq_main : null,
-
-        jq_select_language : null, // Селектор выбора языка
-
-        init_main : function() {
-            if (this.inited)
-                return;
-
-            this.jq_main = $(this._HTML_build_main());
-
-            this._add_handlers();
-            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-
-            this.inited = true;
-        },
-        _HTML_build_main : function() {
-            var html = '<div class="er_sub_view '+this.type+'">';
-
-            html += '</div>';
-            return html;
-        },
-
-        _add_handlers : function() {
-            window.addEventListener(
-                er_main_view.EVENT_MAIN_VIEW_SETTINGS_SHOW,
-                this._on_EVENT_MAIN_VIEW_SETTINGS_SHOW.bind(this));
-        },
-
-        _on_main_view_ready_for_sub_view : function() {
-            this.init_main();
-        },
-
-        _on_EVENT_MAIN_VIEW_SETTINGS_SHOW : function(event) {
-            if(event.detail != this.type)
-                return;
-
-            erlh_main.show();
-            er_main_view.show_settings('none');
-        }
-    };
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_my_account_view._on_main_view_ready_for_sub_view() });
-
-/**
  * Created by erinsasha on 09/05/17.
  */
 
@@ -38514,6 +38514,639 @@ var er_people_you_may_know = window.er_people_you_may_know || {
         }
         this._kill_one_hr_recur(jq_cards, i+1);
     },  
+};
+/**
+ * Created by erinsasha on 09/08/17.
+ */
+
+//w_timeout_clock
+
+/**
+ *
+ * @param options
+ * @param options.timeout
+ * @param options.techname
+ * @param options.description
+ * @param options.jq_parent
+ * @param options.on_close
+ * @constructor
+ */
+function ER_W_Timeout_Clock(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+    this.techname = options.techname;
+    this.timeout = options.timeout;
+    this.description = options.description;
+    this.current_timmer = this.timeout;
+
+    this.closure_on_one_second = this._on_one_second.bind(this);
+
+    this._process();
+}
+
+ER_W_Timeout_Clock.prototype = {
+    _process : function() {
+        this._build();
+    },
+    _get_jq_parent : function() {
+        if(this.jq_parent)
+            return this.jq_parent;
+        var jq_parent = $('#ER_W_Timeout_Clock_Cont');
+        if(jq_parent.length == 0) {
+            return this._build_jq_parent();        
+        } else {
+            this.jq_parent = jq_parent;
+            return jq_parent;
+        }
+    },
+    _build_jq_parent : function() {
+        var html = '<div id="ER_W_Timeout_Clock_Cont"></div>';
+        this.jq_parent = $(html).appendTo($('body'));
+
+        new ER_UI_Draggable({
+            jq_draggable : this.jq_parent,
+            jq_event_provider : this.jq_parent,
+        });
+
+        return this.jq_parent;
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Timeout_Clock">';
+
+        html += '<div class="erlh_header">Next action will start in</div>';
+        html += this._build_HTML_clock();
+        html += this._build_HTML_description();
+        html += this._build_HTML_btn_close();
+
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_clock : function() {
+        var html = '<div class="er_clock">';
+
+        var hh_mm_ss = this._get_hh_mm_ss_from_milliseconds(this.timeout);
+
+        html += '<span class="er_hours">'+er_utils.addLeftZeros(hh_mm_ss.hh,2)+'</span>';
+        html += '<span class="er_semicolon"> : </span>';
+        html += '<span class="er_minutes">'+er_utils.addLeftZeros(hh_mm_ss.mm,2)+'</span>';
+        html += '<span class="er_semicolon"> : </span>';
+        html += '<span class="er_seconds">'+er_utils.addLeftZeros(hh_mm_ss.ss,2)+'</span>';
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_description : function() {
+        var html = '<div class="er_description">';
+
+        html += this.description;
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_btn_close : function() {
+        return '<div class="er_btn_close">close</div>';
+    },
+
+    _build : function() {
+        this._get_jq_parent();
+
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        this._add_handlers();
+    },
+
+    _get_hh_mm_ss_from_milliseconds : function(milliseconds) {
+        var res = {};
+        var hh_left = milliseconds % 3600000;
+        res.hh = Math.round((milliseconds - hh_left) / 3600000);
+        var mm_left = hh_left % 60000;
+        res.mm = Math.round((hh_left - mm_left) / 60000);
+        res.ss = Math.round(mm_left / 1000);
+
+        return res;
+    },
+
+    _add_handlers : function() {
+        this.jq_er_clock = this.jq_main.find('.er_clock');
+        this.jq_hours = this.jq_er_clock.children('.er_hours');
+        this.jq_minutes = this.jq_er_clock.children('.er_minutes');
+        this.jq_seconds = this.jq_er_clock.children('.er_seconds');
+
+        this.jq_main.find('.er_btn_close').click(this._on_click_close.bind(this));
+
+        setTimeout(this.close.bind(this), this.timeout);
+        setTimeout(this.closure_on_one_second, 1000);
+    },
+
+    set_current_jq_hh_mm_ss : function() {
+        var hh_mm_ss = this._get_hh_mm_ss_from_milliseconds(this.current_timmer);
+        this.jq_hours.text(er_utils.addLeftZeros(hh_mm_ss.hh,2));
+        this.jq_minutes.text(er_utils.addLeftZeros(hh_mm_ss.mm,2));
+        this.jq_seconds.text(er_utils.addLeftZeros(hh_mm_ss.ss,2));
+    },
+
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    close : function() {
+        if(!this.options.dont_remove)
+            this.remove();
+
+        if(this.options.on_close)
+            this.options.on_close();
+    },
+
+    _on_one_second : function() {
+        this.current_timmer -= 1000;
+        this.set_current_jq_hh_mm_ss();
+        if(this.current_timmer > 0)
+            setTimeout(this.closure_on_one_second, 1000);
+    },
+    _on_click_close : function() {
+        this.close();
+    },
+};
+/**
+ * Created by erinsasha on 09/08/17.
+ */
+// w_timeout_one_setting
+
+/**
+ *
+ * @param options
+ * @param options.min_max
+ * @param options.techname
+ * @param options.description
+ * @param options.jq_parent
+ * @constructor
+ */
+function ER_W_Timeout_One_Setting(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+    this.techname = options.techname;
+    this.min_max = options.min_max;
+    this.description = options.description;
+    this.current_timmer = this.timeout;
+
+
+    this._process();
+}
+
+ER_W_Timeout_One_Setting.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Timeout_One_Setting" data-techname="'+this.techname+'">';
+
+        html += '<div class="erlh_header">'+this.description+'</div>';
+        html += this._build_HTML_inputs();
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_inputs : function() {
+        var html = '<div class="er_inputs_cont">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+        this._build_inputs();
+
+        this._add_handlers();
+    },
+    _build_inputs : function() {
+        var jq_inputs_cont = this.jq_main.children('.er_inputs_cont');
+
+        this.w_inp_min = new ERLH_W_Input({
+            html_class : 'er_inp_min',
+            jq_parent : jq_inputs_cont,
+            inline_block : true,
+            is_minified : true,
+            input_attrs : {
+                placeholder : 'MIN Seconds',
+                value : Math.round(this.min_max.min / 1000),
+                minvalue : 1,
+                type : 'number',
+                step : 1,
+            },
+            on_change : this._on_change.bind(this),
+            on_keyup : this._on_change.bind(this)
+        });
+
+        this.w_inp_max = new ERLH_W_Input({
+            html_class : 'er_inp_max',
+            jq_parent : jq_inputs_cont,
+            inline_block : true,
+            is_minified : true,
+            input_attrs : {
+                placeholder : 'MAX Seconds',
+                value : Math.round(this.min_max.max / 1000),
+                minvalue : 1,
+                type : 'number',
+                step : 1,
+            },
+            on_change : this._on_change.bind(this),
+            on_keyup : this._on_change.bind(this)
+        });
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    set_min_max : function(min_max) {
+        this.min_max = min_max;
+        this.w_inp_min.set(Math.round(this.min_max.min / 1000));
+        this.w_inp_max.set(Math.round(this.min_max.max / 1000));
+    },
+    get_min_max : function() {
+        this.min_max.min = this.w_inp_min.get()*1000;
+        this.min_max.max = this.w_inp_max.get()*1000;
+
+        return this.min_max;
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+    _on_change : function() {
+
+    }
+};
+/**
+ * Created by erinsasha on 09/08/17.
+ */
+// w_timeout_settings
+
+
+/**
+ *
+ * @param options
+ * @param options.header
+ * @param options.timeouts_names (techname -> username)
+ * @param options.timeouts
+ * @param options.fast_timeouts
+ * @param options.safe_timeouts
+ * @param options.add_message_mode_switcher
+ * @param options.message_mode
+ * @param options.jq_parent
+ * @param options.callback_save_settings
+ * @param options.on_close
+ * @param options.on_cancel
+ * @constructor
+ */
+function ER_W_Timeout_Settings(options) {
+    options = options ? options : {};
+    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
+    this.jq_parent = options.jq_parent;
+    this.timeouts_names = options.timeouts_names;
+    this.timeouts = options.timeouts;
+    this.fast_timeouts = options.fast_timeouts;
+    this.safe_timeouts = options.safe_timeouts;
+    this.add_message_mode_switcher = options.add_message_mode_switcher;
+    this.message_mode = options.message_mode;
+    this.inputs_widgetes = {};
+
+    this.options = options;
+
+    this._process();
+}
+
+ER_W_Timeout_Settings.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Timeout_Settings">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build_HTML_main_content : function() {
+        var html = '<div class="ERLH_main_content">';
+
+        html += this._build_HTML_header();
+        html += this._build_HTML_preset_buttons_cont();
+        html += this._build_HTML_fields_cont();
+        html += this._build_HTML_buttons_cont();
+
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_header : function() {
+        var header = this.options.header ? this.options.header : 'Timeout settings';
+        return '<p class="erlh_header">'+header+'</p>';
+    },
+    _build_HTML_fields_cont : function() {
+        var html = '<div class="erlh_fields_cont">';
+        html += '</div>';
+        return html;
+    },
+    _build_HTML_buttons_cont : function() {
+        var html = '<div class="erlh_buttons_cont">';
+
+        html += '<span class="btn_cancel_cont"></span>';
+        html += '<span class="btn_save_cont"></span>';
+
+        html += '</div>';
+        return html;
+    },
+    _build_HTML_preset_buttons_cont : function() {
+        var html = '<div class="erlh_preset_buttons_cont">';
+
+        html += '<span class="btn_reset_to_fast_cont"></span>';
+        html += '<span class="btn_reset_to_safe_cont"></span>';
+
+        html += '</div>';
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+
+        if(this.options.dont_use_popup) {
+            this.jq_main_content = this.jq_main;
+        } else {
+            this.w_popup = new ERLH_W_Popup({
+                jq_parent : this.jq_main,
+                not_closable : true
+            });
+            this.jq_main_content = this.w_popup.get_user_cont();
+        }
+
+        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
+
+        this._build_preset_buttons();
+        this._build_fields();
+        this._build_buttons();
+
+        this._add_handlers();
+    },
+    _build_fields : function() {
+        var jq_fields_cont = this.jq_main_content.children('.erlh_fields_cont');
+
+        var timeouts_tech_names = Object.keys(this.timeouts_names);
+
+        var tech_name, timeout, description, w_timeout;
+
+        for(var i=0; i<timeouts_tech_names.length; i++) {
+            tech_name = timeouts_tech_names[i];
+            description = this.timeouts_names[tech_name];
+            timeout = this.timeouts[tech_name];
+            w_timeout = new ER_W_Timeout_One_Setting({
+                    min_max : timeout,
+                    techname : tech_name,
+                    description : description,
+                    jq_parent : jq_fields_cont
+            });
+
+            this.inputs_widgetes[tech_name] = w_timeout;
+        }
+
+        this._build_message_mode_switcher(jq_fields_cont);
+    },
+    _build_message_mode_switcher : function(jq_parent) {
+        if(!this.add_message_mode_switcher)
+            return;
+
+        this.w_message_mode_switcher = new ER_W_Writing_Inserting_Mode_Switcher({
+            jq_parent : jq_parent,
+            value : this.message_mode,
+            on_change : this._on_change_message_mode.bind(this)
+        })
+    },
+    _build_preset_buttons : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_preset_buttons_cont');
+
+        this.w_btn_reset_to_fast = new ERLH_W_Button({
+            html_class : 'btn_reset_to_fast',
+            is_danger : true,
+            jq_parent : jq_btns_cont.children('.btn_reset_to_fast_cont'),
+            text : 'Reset to FAST TIMEOUTS',
+            on_click : this._on_click_btn_reset_to_fast.bind(this)
+        });
+
+        this.w_btn_reset_to_safe = new ERLH_W_Button({
+            html_class : 'btn_reset_to_safe',
+            color : 'green',
+            jq_parent : jq_btns_cont.children('.btn_reset_to_safe_cont'),
+            text : 'Reset to SAFE TIMEOUTS',
+            disabled : false,
+            on_click : this._on_click_btn_reset_to_safe.bind(this)
+        });
+    },
+
+    _build_buttons : function() {
+        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
+
+        this.w_btn_cancel = new ERLH_W_Button({
+            html_class : 'btn_cancel',
+            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
+            text : 'Cancel',
+            on_click : this._on_click_btn_cancel.bind(this)
+        });
+
+        this.w_btn_save = new ERLH_W_Button({
+            html_class : 'btn_save',
+            jq_parent : jq_btns_cont.children('.btn_save_cont'),
+            text : 'Save',
+            disabled : false,
+            on_click : this._on_click_btn_save.bind(this)
+        });
+    },
+
+    _set_fields_values : function() {
+        var timeouts_tech_names = Object.keys(this.timeouts_names);
+        var tech_name, timeout, w_timeout;
+
+        for(var i=0; i<timeouts_tech_names.length; i++) {
+            tech_name = timeouts_tech_names[i];
+
+            timeout = this.timeouts[tech_name];
+            w_timeout = this.inputs_widgetes[tech_name];
+            w_timeout.set_min_max(timeout);
+        }
+    },
+    _set_message_mode_switcher : function() {
+        if(this.w_message_mode_switcher)
+            this.w_message_mode_switcher.set(this.message_mode);
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+
+    close : function() {
+        if(!this.options.dont_remove)
+            this.remove();
+
+        if(this.options.on_close)
+            this.options.on_close();
+    },
+
+    gather_request : function() {
+        var timeouts = {};
+
+        var timeouts_tech_names = Object.keys(this.inputs_widgetes);
+        var w_timeout;
+
+        for(var i=0; i<timeouts_tech_names.length; i++) {
+            tech_name = timeouts_tech_names[i];
+            w_timeout = this.inputs_widgetes[tech_name];
+            timeouts[tech_name] = w_timeout.get_min_max();
+        }
+
+        return timeouts;
+    },
+
+    _on_change : function() {
+
+    },
+
+    _on_click_btn_cancel : function() {
+        if(this.options.on_cancel)
+            this.options.on_cancel();
+        this.close();
+    },
+
+    _on_click_btn_save : function() {
+        this.options.callback_save_settings(this.gather_request(), this.message_mode);
+        new ERLH_W_Message({ message : 'Timeout settings have been changed!' });
+        this.close();
+    },
+    _on_click_btn_reset_to_fast : function() {
+        this.timeouts = er_utils.get_object_copy(this.fast_timeouts);
+        this._set_fields_values();
+        this.message_mode = 2;
+        this._set_message_mode_switcher();
+    },
+    _on_click_btn_reset_to_safe : function() {
+        this.timeouts = er_utils.get_object_copy(this.safe_timeouts);
+        this._set_fields_values();
+        this.message_mode = 1;
+        this._set_message_mode_switcher();
+    },
+    _on_change_message_mode : function(val) {
+        this.message_mode = val;
+    },
+};
+/**
+ * Created by erinsasha on 11/08/17.
+ */
+//w_write_insert_mode_switcher
+
+/**
+ *
+ * @param options
+ * @param options.value
+ * @param options.jq_parent
+ * @param options.on_change
+ * @constructor
+ */
+function ER_W_Writing_Inserting_Mode_Switcher(options) {
+    options = options ? options : {};
+    this.jq_parent = options.jq_parent;
+
+    this.options = options;
+    this.value = options.value;
+
+
+    this._process();
+}
+
+ER_W_Writing_Inserting_Mode_Switcher.prototype = {
+    _process : function() {
+        this._build();
+    },
+
+    _build_HTML : function() {
+        var html = '<div class="ER_W_Writing_Inserting_Mode_Switcher" data-techname="'+this.techname+'">';
+
+        //html += '<div class="erlh_header">'+this.description+'</div>';
+        html += this._build_HTML_inputs();
+        html += '</div>';
+
+        return html;
+    },
+    _build_HTML_inputs : function() {
+        var html = '<div class="er_inputs_cont">';
+        html += '</div>';
+
+        return html;
+    },
+
+    _build : function() {
+        var html = this._build_HTML();
+        this.jq_main = $(html);
+        this.jq_main.appendTo(this.jq_parent);
+        this._build_inputs();
+
+        this._add_handlers();
+    },
+    _build_inputs : function() {
+        var jq_inputs_cont = this.jq_main.children('.er_inputs_cont');
+
+        this.w_method_select = new ERLH_W_Select({
+            html_class : 'write_insert_method_select',
+            jq_parent : jq_inputs_cont,
+            label : 'Choose: Insert OR Type (Write) Message',
+            select_attrs : {},
+            ids_to_options : {
+                1 : { id : 1, name : 'Type (Write) Message [TAKES MORE TIME]'},
+                2 : { id : 2, name : 'Insert message [TAKES LESS TIME]'},
+            },
+            selected_id : this.value,
+            on_change : this._on_change.bind(this)
+        });
+    },
+
+    _add_handlers : function() {
+
+    },
+
+    set : function(val) {
+        this.w_method_select.set(val);
+    },
+    get : function() {
+        return this.w_method_select.get();
+    },
+
+    remove : function() {
+        this.jq_main.remove();
+    },
+    _on_change : function() {
+        this.value = this.w_method_select.get();
+        if(this.options.on_change)
+            this.options.on_change(this.value);
+    },
 };
 /**
  * Created by erinsasha on 13/01/17.
@@ -42516,1103 +43149,6 @@ var er_universal_profile_helper = window.er_universal_profile_helper || {
             window.location.assign(url);
         },
     };
-/**
- * Created by erinsasha on 08/01/17.
- */
-er_video_help_view = window.er_video_help_view || {
-        type : 'er_video_help_view',
-        tittle : 'Video-tutorial & User Manual',
-
-        jq_main : null,
-
-        articles : {
-            1 : { id : 1,
-                name : 'Automatically send personalised invitations to targeted 2nd & 3rd contacts',
-                link : 'https://medium.com/linked-helper/collect-select-invite-2nd-3rd-linkedin-connections-4f9d41628467?source=---------4-----------'
-            },
-            2 : { id : 2,
-                name : 'How to send your messages to your LinkedIn 1st connections',
-                link : 'https://medium.com/linked-helper/how-to-send-your-messages-to-your-linkedin-1st-connections-mailing-system-message-broadcast-8d6d0308516e#.ta7u6kl65'
-            },
-            3 : { id : 3,
-                name : 'How to manage Collected Recipients (Recipients Queue), Processed Recipients and Excluded Contacts for message broadcast to 1st connections',
-                link : 'https://medium.com/linked-helper/how-to-manage-collected-recipients-recipients-queue-processed-recipients-and-excluded-contacts-580d53f6ee63#.7x6vihbvc'
-            },
-            4 : { id : 4,
-                name : 'How to manage broadcasts to LinkedIn 1st connections — creating messages chains',
-                link : 'https://medium.com/linked-helper/how-to-manage-broadcasts-to-linkedin-1st-connections-creating-messages-chains-61f746389009#.jnutkg339'
-            },
-            5 : { id : 5,
-                name : 'Sequential messaging',
-                link : 'https://medium.com/linked-helper/how-to-manage-broadcasts-to-linkedin-1st-connections-creating-messages-chains-61f746389009#.jnutkg339'
-            },
-            6 : { id : 6,
-                name : 'Export your LinkedIn contacts to CSV File',
-                link : 'https://medium.com/linked-helper/export-your-contacts-to-csv-file-build-mailing-list-only-for-new-linkedin-interface-2c0327b18716#.1shtg7vdf'
-            },
-            7 : { id : 7,
-                name : 'Build mailing list',
-                link : 'https://medium.com/linked-helper/export-your-contacts-to-csv-file-build-mailing-list-only-for-new-linkedin-interface-2c0327b18716#.1shtg7vdf'
-            },
-            8 : { id : 8,
-                name : 'Boost your profile and get hundreds of endorsements',
-                link : 'https://medium.com/linked-helper/boost-your-profile-and-get-hundreds-of-endorsements-from-other-users-in-no-time-automatically-b75758237a0f#.gccj6rmap'
-            },
-            9 : { id : 9,
-                name : 'Automatically endorse all your contacts',
-                link : 'https://medium.com/linked-helper/boost-your-profile-and-get-hundreds-of-endorsements-from-other-users-in-no-time-automatically-b75758237a0f#.gccj6rmap'
-            },
-            10 : { id : 10,
-                name : 'Automatically add your signature to new messages',
-                link : 'https://medium.com/linked-helper/automatically-add-your-signature-to-new-messages-61574a394b02?source=---------3'
-            },
-            11 : { id : 11,
-                name : 'Switch collapse mode to minified',
-                link : 'https://medium.com/linked-helper/switch-collapse-mode-to-minified-c9543608c018?source=---------2'
-            },
-            12 : { id : 12,
-                name : 'Auto-Visit Profiles to get Look-Back',
-                link : 'https://medium.com/linked-helper/auto-visit-profiles-to-get-look-back-8fe2aa4be7a9#.jdlvh0h9o'
-            },
-            13 : { id : 13,
-                name : 'Collect, Select & Invite 2nd & 3rd connections',
-                link : 'https://medium.com/linked-helper/collect-select-invite-2nd-3rd-linkedin-connections-4f9d41628467#.3t82hhxvg'
-            },
-            14 : { id : 14,
-                name : 'Important — Linked Helper Data Storage',
-                link : 'https://medium.com/linked-helper/important-linked-helper-data-storage-2a8d73a38e0d?source=collection_home---4------1----------'
-            },
-            15 : { id : 15,
-                name : 'How to send messages to recently added connections',
-                link : 'https://medium.com/linked-helper/how-to-collect-all-your-1st-connections-for-message-broadcast-f4b178928759'
-            },
-            16 : { id : 16,
-                name : 'How to collect all 1st connections for Message Broadcast',
-                link : 'https://medium.com/linked-helper/how-to-collect-all-your-1st-connections-for-message-broadcast-f4b178928759'
-            },
-            17 : { id : 17,
-                name : 'Sent pending invites bulk canceller',
-                link : 'https://medium.com/linked-helper/how-to-cancel-withdraw-all-my-sent-pending-invites-connection-requests-in-linkedin-39b8be9ba3ad'
-            },
-            18 : { id : 18,
-                name : 'How To backup & restore your Linked Helper Data',
-                link : 'https://medium.com/linked-helper/how-to-backup-restore-your-linked-helper-data-f832fdfcc334'
-            },
-            19 : { id : 19,
-                name : 'Recommended daily limits',
-                link : 'https://medium.com/linked-helper/what-kind-of-limits-should-i-use-88df661c6cf0'
-            },
-            20 : { id : 20,
-                name : 'Will Linked Helper send invite twice to the same person?',
-                link : 'https://medium.com/linked-helper/will-linked-helper-send-invite-twice-to-the-same-person-f887c04f2deb'
-            },
-            21 : { id : 21,
-                name : 'I think, something wrong! How to ask for a support?',
-                link : 'https://medium.com/linked-helper/i-think-something-wrong-how-to-ask-for-a-support-f9afecdde8c'
-            },
-            22 : { id : 22,
-                name : 'I have more than 1000 contacts. How to collect all of them thru search?',
-                link : 'https://medium.com/linked-helper/i-have-more-than-1000-contacts-how-to-collect-all-of-them-thru-search-b83f29dfa402'
-            },
-            23 : { id : 23,
-                name : 'Not all contacts in CSV file have email address. Why?',
-                link : 'https://medium.com/linked-helper/not-all-contacts-in-csv-file-have-email-address-why-63c64f83d33e'
-            },
-            24 : { id : 24,
-                name : 'Can I manage multiple LinkedIn accounts with one Linked Helper license?',
-                link : 'https://medium.com/linked-helper/can-manage-multiple-linkedin-accounts-with-one-linked-helper-license-5d0af01c257d'
-            },
-            25 : { id : 25,
-                name : 'PRIVACY POLICY & TERMS OF USE',
-                link : 'https://linkedhelper.com/terms'
-            },
-            26 : { id : 26,
-                name : 'Plans & Prices',
-                link : 'https://linkedhelper.com/#price-table'
-            },
-        },
-
-        init_main : function() {
-            if (this.inited)
-                return;
-
-            er_connect_in_search.init_limits();
-
-            this.jq_main = $(this._HTML_build_main());
-
-            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-
-            if (! er_tabs_control.is_any_mode_active() && !er_my_invites_canceler.is_my_invites_page()) {
-                er_main_view.show_settings(this.type);
-            }
-
-            this.inited = true;
-        },
-        _HTML_build_main : function() {
-            var html = '<div class="er_sub_view '+this.type+'">';
-
-            //html += '<a class="help jim-sm-bsale" target="_blank" href="https://drive.google.com/open?id=0BwIBOuOHC0Gucmg2OHEwdF9CZzg">User manual</a><a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper">User manual</a><br>';
-            html += '<div><a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/tagged/how-to">How To</a>'
-                + '<span> | </span>'
-                + '<a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/tagged/faq">FAQ</a>'
-                + '<span> | </span>'
-                + '<a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/solutions-for-common-issues-75047b5d1e2e">Solutions for common problems</a></div>'
-                + '<br>';
-
-            html += this._html_build_blog_items();
-
-            html += '<br>';
-
-            html += '<p class="label">Youtube-tutorial:</p>'
-                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=sPjISVb1r_s">1: Automatically expand your contact list</a><br>'
-                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=kaaXLLn6RQw">2: Broadcast your messages automatically</a><br>'
-                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=qmmDckZ3PvM">3: Boost your profile and get hundreds of endorsements</a><br>'
-                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=HOUoC03pous">4: Automatically add your signature to messages</a>';
-
-            html += '<br><span class="support_email">';
-            html += '<a class="jim-sm-bsale" target="_blank" href="mailto:info@linkedhelper.ch">info@linkedhelper.ch</a>';
-            html += '<a class="jim-sm-default" target="_blank" href="mailto:info@linkedhelper.com">info@linkedhelper.com</a>';
-            html += '</span>';
-
-            html += '</div>';
-            return html;
-        },
-
-        _html_build_blog_items : function() {
-            var html = '<div class="blog_cont">';
-
-            var ids = [];
-            for(var id in this.articles) {
-                ids.push(id);
-            }
-
-            er_utils.shuffle_array(ids);
-
-            for(var i=0; i<ids.length; i++) {
-                html += this._html_build_blog_item(this.articles[ids[i]], i+1);
-            }
-
-            html += '</div>';
-            return html;
-        },
-        _html_build_blog_item : function(item, pos) {
-            return '<a class="help er_blog" target="_blank" href="'+item.link+'">'+pos+' : '+item.name+'</a>';
-        },
-
-
-        _on_main_view_ready_for_sub_view : function() {
-            this.init_main();
-        },
-
-    };
-
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_video_help_view._on_main_view_ready_for_sub_view() });
-/**
- * Created by erinsasha on 09/08/17.
- */
-
-//w_timeout_clock
-
-/**
- *
- * @param options
- * @param options.timeout
- * @param options.techname
- * @param options.description
- * @param options.jq_parent
- * @param options.on_close
- * @constructor
- */
-function ER_W_Timeout_Clock(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-    this.techname = options.techname;
-    this.timeout = options.timeout;
-    this.description = options.description;
-    this.current_timmer = this.timeout;
-
-    this.closure_on_one_second = this._on_one_second.bind(this);
-
-    this._process();
-}
-
-ER_W_Timeout_Clock.prototype = {
-    _process : function() {
-        this._build();
-    },
-    _get_jq_parent : function() {
-        if(this.jq_parent)
-            return this.jq_parent;
-        var jq_parent = $('#ER_W_Timeout_Clock_Cont');
-        if(jq_parent.length == 0) {
-            return this._build_jq_parent();        
-        } else {
-            this.jq_parent = jq_parent;
-            return jq_parent;
-        }
-    },
-    _build_jq_parent : function() {
-        var html = '<div id="ER_W_Timeout_Clock_Cont"></div>';
-        this.jq_parent = $(html).appendTo($('body'));
-
-        new ER_UI_Draggable({
-            jq_draggable : this.jq_parent,
-            jq_event_provider : this.jq_parent,
-        });
-
-        return this.jq_parent;
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Timeout_Clock">';
-
-        html += '<div class="erlh_header">Next action will start in</div>';
-        html += this._build_HTML_clock();
-        html += this._build_HTML_description();
-        html += this._build_HTML_btn_close();
-
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_clock : function() {
-        var html = '<div class="er_clock">';
-
-        var hh_mm_ss = this._get_hh_mm_ss_from_milliseconds(this.timeout);
-
-        html += '<span class="er_hours">'+er_utils.addLeftZeros(hh_mm_ss.hh,2)+'</span>';
-        html += '<span class="er_semicolon"> : </span>';
-        html += '<span class="er_minutes">'+er_utils.addLeftZeros(hh_mm_ss.mm,2)+'</span>';
-        html += '<span class="er_semicolon"> : </span>';
-        html += '<span class="er_seconds">'+er_utils.addLeftZeros(hh_mm_ss.ss,2)+'</span>';
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_description : function() {
-        var html = '<div class="er_description">';
-
-        html += this.description;
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_btn_close : function() {
-        return '<div class="er_btn_close">close</div>';
-    },
-
-    _build : function() {
-        this._get_jq_parent();
-
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        this._add_handlers();
-    },
-
-    _get_hh_mm_ss_from_milliseconds : function(milliseconds) {
-        var res = {};
-        var hh_left = milliseconds % 3600000;
-        res.hh = Math.round((milliseconds - hh_left) / 3600000);
-        var mm_left = hh_left % 60000;
-        res.mm = Math.round((hh_left - mm_left) / 60000);
-        res.ss = Math.round(mm_left / 1000);
-
-        return res;
-    },
-
-    _add_handlers : function() {
-        this.jq_er_clock = this.jq_main.find('.er_clock');
-        this.jq_hours = this.jq_er_clock.children('.er_hours');
-        this.jq_minutes = this.jq_er_clock.children('.er_minutes');
-        this.jq_seconds = this.jq_er_clock.children('.er_seconds');
-
-        this.jq_main.find('.er_btn_close').click(this._on_click_close.bind(this));
-
-        setTimeout(this.close.bind(this), this.timeout);
-        setTimeout(this.closure_on_one_second, 1000);
-    },
-
-    set_current_jq_hh_mm_ss : function() {
-        var hh_mm_ss = this._get_hh_mm_ss_from_milliseconds(this.current_timmer);
-        this.jq_hours.text(er_utils.addLeftZeros(hh_mm_ss.hh,2));
-        this.jq_minutes.text(er_utils.addLeftZeros(hh_mm_ss.mm,2));
-        this.jq_seconds.text(er_utils.addLeftZeros(hh_mm_ss.ss,2));
-    },
-
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    close : function() {
-        if(!this.options.dont_remove)
-            this.remove();
-
-        if(this.options.on_close)
-            this.options.on_close();
-    },
-
-    _on_one_second : function() {
-        this.current_timmer -= 1000;
-        this.set_current_jq_hh_mm_ss();
-        if(this.current_timmer > 0)
-            setTimeout(this.closure_on_one_second, 1000);
-    },
-    _on_click_close : function() {
-        this.close();
-    },
-};
-/**
- * Created by erinsasha on 09/08/17.
- */
-// w_timeout_one_setting
-
-/**
- *
- * @param options
- * @param options.min_max
- * @param options.techname
- * @param options.description
- * @param options.jq_parent
- * @constructor
- */
-function ER_W_Timeout_One_Setting(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-    this.techname = options.techname;
-    this.min_max = options.min_max;
-    this.description = options.description;
-    this.current_timmer = this.timeout;
-
-
-    this._process();
-}
-
-ER_W_Timeout_One_Setting.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Timeout_One_Setting" data-techname="'+this.techname+'">';
-
-        html += '<div class="erlh_header">'+this.description+'</div>';
-        html += this._build_HTML_inputs();
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_inputs : function() {
-        var html = '<div class="er_inputs_cont">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-        this._build_inputs();
-
-        this._add_handlers();
-    },
-    _build_inputs : function() {
-        var jq_inputs_cont = this.jq_main.children('.er_inputs_cont');
-
-        this.w_inp_min = new ERLH_W_Input({
-            html_class : 'er_inp_min',
-            jq_parent : jq_inputs_cont,
-            inline_block : true,
-            is_minified : true,
-            input_attrs : {
-                placeholder : 'MIN Seconds',
-                value : Math.round(this.min_max.min / 1000),
-                minvalue : 1,
-                type : 'number',
-                step : 1,
-            },
-            on_change : this._on_change.bind(this),
-            on_keyup : this._on_change.bind(this)
-        });
-
-        this.w_inp_max = new ERLH_W_Input({
-            html_class : 'er_inp_max',
-            jq_parent : jq_inputs_cont,
-            inline_block : true,
-            is_minified : true,
-            input_attrs : {
-                placeholder : 'MAX Seconds',
-                value : Math.round(this.min_max.max / 1000),
-                minvalue : 1,
-                type : 'number',
-                step : 1,
-            },
-            on_change : this._on_change.bind(this),
-            on_keyup : this._on_change.bind(this)
-        });
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    set_min_max : function(min_max) {
-        this.min_max = min_max;
-        this.w_inp_min.set(Math.round(this.min_max.min / 1000));
-        this.w_inp_max.set(Math.round(this.min_max.max / 1000));
-    },
-    get_min_max : function() {
-        this.min_max.min = this.w_inp_min.get()*1000;
-        this.min_max.max = this.w_inp_max.get()*1000;
-
-        return this.min_max;
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-    _on_change : function() {
-
-    }
-};
-/**
- * Created by erinsasha on 09/08/17.
- */
-// w_timeout_settings
-
-
-/**
- *
- * @param options
- * @param options.header
- * @param options.timeouts_names (techname -> username)
- * @param options.timeouts
- * @param options.fast_timeouts
- * @param options.safe_timeouts
- * @param options.add_message_mode_switcher
- * @param options.message_mode
- * @param options.jq_parent
- * @param options.callback_save_settings
- * @param options.on_close
- * @param options.on_cancel
- * @constructor
- */
-function ER_W_Timeout_Settings(options) {
-    options = options ? options : {};
-    options.jq_parent = options.jq_parent ? options.jq_parent : $('body');
-    this.jq_parent = options.jq_parent;
-    this.timeouts_names = options.timeouts_names;
-    this.timeouts = options.timeouts;
-    this.fast_timeouts = options.fast_timeouts;
-    this.safe_timeouts = options.safe_timeouts;
-    this.add_message_mode_switcher = options.add_message_mode_switcher;
-    this.message_mode = options.message_mode;
-    this.inputs_widgetes = {};
-
-    this.options = options;
-
-    this._process();
-}
-
-ER_W_Timeout_Settings.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Timeout_Settings">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build_HTML_main_content : function() {
-        var html = '<div class="ERLH_main_content">';
-
-        html += this._build_HTML_header();
-        html += this._build_HTML_preset_buttons_cont();
-        html += this._build_HTML_fields_cont();
-        html += this._build_HTML_buttons_cont();
-
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_header : function() {
-        var header = this.options.header ? this.options.header : 'Timeout settings';
-        return '<p class="erlh_header">'+header+'</p>';
-    },
-    _build_HTML_fields_cont : function() {
-        var html = '<div class="erlh_fields_cont">';
-        html += '</div>';
-        return html;
-    },
-    _build_HTML_buttons_cont : function() {
-        var html = '<div class="erlh_buttons_cont">';
-
-        html += '<span class="btn_cancel_cont"></span>';
-        html += '<span class="btn_save_cont"></span>';
-
-        html += '</div>';
-        return html;
-    },
-    _build_HTML_preset_buttons_cont : function() {
-        var html = '<div class="erlh_preset_buttons_cont">';
-
-        html += '<span class="btn_reset_to_fast_cont"></span>';
-        html += '<span class="btn_reset_to_safe_cont"></span>';
-
-        html += '</div>';
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-
-        if(this.options.dont_use_popup) {
-            this.jq_main_content = this.jq_main;
-        } else {
-            this.w_popup = new ERLH_W_Popup({
-                jq_parent : this.jq_main,
-                not_closable : true
-            });
-            this.jq_main_content = this.w_popup.get_user_cont();
-        }
-
-        this.jq_main_content = $(this._build_HTML_main_content()).appendTo(this.jq_main_content);
-
-        this._build_preset_buttons();
-        this._build_fields();
-        this._build_buttons();
-
-        this._add_handlers();
-    },
-    _build_fields : function() {
-        var jq_fields_cont = this.jq_main_content.children('.erlh_fields_cont');
-
-        var timeouts_tech_names = Object.keys(this.timeouts_names);
-
-        var tech_name, timeout, description, w_timeout;
-
-        for(var i=0; i<timeouts_tech_names.length; i++) {
-            tech_name = timeouts_tech_names[i];
-            description = this.timeouts_names[tech_name];
-            timeout = this.timeouts[tech_name];
-            w_timeout = new ER_W_Timeout_One_Setting({
-                    min_max : timeout,
-                    techname : tech_name,
-                    description : description,
-                    jq_parent : jq_fields_cont
-            });
-
-            this.inputs_widgetes[tech_name] = w_timeout;
-        }
-
-        this._build_message_mode_switcher(jq_fields_cont);
-    },
-    _build_message_mode_switcher : function(jq_parent) {
-        if(!this.add_message_mode_switcher)
-            return;
-
-        this.w_message_mode_switcher = new ER_W_Writing_Inserting_Mode_Switcher({
-            jq_parent : jq_parent,
-            value : this.message_mode,
-            on_change : this._on_change_message_mode.bind(this)
-        })
-    },
-    _build_preset_buttons : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_preset_buttons_cont');
-
-        this.w_btn_reset_to_fast = new ERLH_W_Button({
-            html_class : 'btn_reset_to_fast',
-            is_danger : true,
-            jq_parent : jq_btns_cont.children('.btn_reset_to_fast_cont'),
-            text : 'Reset to FAST TIMEOUTS',
-            on_click : this._on_click_btn_reset_to_fast.bind(this)
-        });
-
-        this.w_btn_reset_to_safe = new ERLH_W_Button({
-            html_class : 'btn_reset_to_safe',
-            color : 'green',
-            jq_parent : jq_btns_cont.children('.btn_reset_to_safe_cont'),
-            text : 'Reset to SAFE TIMEOUTS',
-            disabled : false,
-            on_click : this._on_click_btn_reset_to_safe.bind(this)
-        });
-    },
-
-    _build_buttons : function() {
-        var jq_btns_cont = this.jq_main_content.children('.erlh_buttons_cont');
-
-        this.w_btn_cancel = new ERLH_W_Button({
-            html_class : 'btn_cancel',
-            jq_parent : jq_btns_cont.children('.btn_cancel_cont'),
-            text : 'Cancel',
-            on_click : this._on_click_btn_cancel.bind(this)
-        });
-
-        this.w_btn_save = new ERLH_W_Button({
-            html_class : 'btn_save',
-            jq_parent : jq_btns_cont.children('.btn_save_cont'),
-            text : 'Save',
-            disabled : false,
-            on_click : this._on_click_btn_save.bind(this)
-        });
-    },
-
-    _set_fields_values : function() {
-        var timeouts_tech_names = Object.keys(this.timeouts_names);
-        var tech_name, timeout, w_timeout;
-
-        for(var i=0; i<timeouts_tech_names.length; i++) {
-            tech_name = timeouts_tech_names[i];
-
-            timeout = this.timeouts[tech_name];
-            w_timeout = this.inputs_widgetes[tech_name];
-            w_timeout.set_min_max(timeout);
-        }
-    },
-    _set_message_mode_switcher : function() {
-        if(this.w_message_mode_switcher)
-            this.w_message_mode_switcher.set(this.message_mode);
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-
-    close : function() {
-        if(!this.options.dont_remove)
-            this.remove();
-
-        if(this.options.on_close)
-            this.options.on_close();
-    },
-
-    gather_request : function() {
-        var timeouts = {};
-
-        var timeouts_tech_names = Object.keys(this.inputs_widgetes);
-        var w_timeout;
-
-        for(var i=0; i<timeouts_tech_names.length; i++) {
-            tech_name = timeouts_tech_names[i];
-            w_timeout = this.inputs_widgetes[tech_name];
-            timeouts[tech_name] = w_timeout.get_min_max();
-        }
-
-        return timeouts;
-    },
-
-    _on_change : function() {
-
-    },
-
-    _on_click_btn_cancel : function() {
-        if(this.options.on_cancel)
-            this.options.on_cancel();
-        this.close();
-    },
-
-    _on_click_btn_save : function() {
-        this.options.callback_save_settings(this.gather_request(), this.message_mode);
-        new ERLH_W_Message({ message : 'Timeout settings have been changed!' });
-        this.close();
-    },
-    _on_click_btn_reset_to_fast : function() {
-        this.timeouts = er_utils.get_object_copy(this.fast_timeouts);
-        this._set_fields_values();
-        this.message_mode = 2;
-        this._set_message_mode_switcher();
-    },
-    _on_click_btn_reset_to_safe : function() {
-        this.timeouts = er_utils.get_object_copy(this.safe_timeouts);
-        this._set_fields_values();
-        this.message_mode = 1;
-        this._set_message_mode_switcher();
-    },
-    _on_change_message_mode : function(val) {
-        this.message_mode = val;
-    },
-};
-/**
- * Created by erinsasha on 11/08/17.
- */
-//w_write_insert_mode_switcher
-
-/**
- *
- * @param options
- * @param options.value
- * @param options.jq_parent
- * @param options.on_change
- * @constructor
- */
-function ER_W_Writing_Inserting_Mode_Switcher(options) {
-    options = options ? options : {};
-    this.jq_parent = options.jq_parent;
-
-    this.options = options;
-    this.value = options.value;
-
-
-    this._process();
-}
-
-ER_W_Writing_Inserting_Mode_Switcher.prototype = {
-    _process : function() {
-        this._build();
-    },
-
-    _build_HTML : function() {
-        var html = '<div class="ER_W_Writing_Inserting_Mode_Switcher" data-techname="'+this.techname+'">';
-
-        //html += '<div class="erlh_header">'+this.description+'</div>';
-        html += this._build_HTML_inputs();
-        html += '</div>';
-
-        return html;
-    },
-    _build_HTML_inputs : function() {
-        var html = '<div class="er_inputs_cont">';
-        html += '</div>';
-
-        return html;
-    },
-
-    _build : function() {
-        var html = this._build_HTML();
-        this.jq_main = $(html);
-        this.jq_main.appendTo(this.jq_parent);
-        this._build_inputs();
-
-        this._add_handlers();
-    },
-    _build_inputs : function() {
-        var jq_inputs_cont = this.jq_main.children('.er_inputs_cont');
-
-        this.w_method_select = new ERLH_W_Select({
-            html_class : 'write_insert_method_select',
-            jq_parent : jq_inputs_cont,
-            label : 'Choose: Insert OR Type (Write) Message',
-            select_attrs : {},
-            ids_to_options : {
-                1 : { id : 1, name : 'Type (Write) Message [TAKES MORE TIME]'},
-                2 : { id : 2, name : 'Insert message [TAKES LESS TIME]'},
-            },
-            selected_id : this.value,
-            on_change : this._on_change.bind(this)
-        });
-    },
-
-    _add_handlers : function() {
-
-    },
-
-    set : function(val) {
-        this.w_method_select.set(val);
-    },
-    get : function() {
-        return this.w_method_select.get();
-    },
-
-    remove : function() {
-        this.jq_main.remove();
-    },
-    _on_change : function() {
-        this.value = this.w_method_select.get();
-        if(this.options.on_change)
-            this.options.on_change(this.value);
-    },
-};
-/**
- * Created by Alex on 09.11.2016.
- */
-var er_user_signature = window.er_user_signature || {
-    CONST_SEARCH_TIMEOUT : 500, // режим ожидания между следующей попытка поиска textarea
-    is_signature_added : false, // была ли добавлена подпись
-
-    set_mode_on_and_begin_process : function() {
-        this.set_user_signature_mode(true);
-        this.process_page();
-    },
-    set_user_signature_mode : function(mode) {
-        localStorage.er_user_signature_mode = mode;
-    },
-    is_user_signature_mode_on : function() {
-        return localStorage.er_user_signature_mode == 'true';
-    },
-    _find_textarea : function() {
-        var jq_textarea = $('#compose-message');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('#body-msgForm');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('#send_message_linkedin_message_message');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('textarea.msg-compose-form__message-text');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('textarea.msg-messaging-form__message');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('#message-body-content');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-        jq_textarea = $('#compose-text');
-        if (jq_textarea.length == 1)
-            return jq_textarea;
-
-        return jq_textarea;
-    },
-    save_signature : function(signature) {
-        localStorage.er_user_signature = signature;
-    },
-    get_signature : function() {
-        var signature = localStorage.er_user_signature;
-        if (!signature)
-            return '';
-        else
-            return signature;
-    },
-    _add_signature_to_textarea : function(jq_textarea) {
-        jq_textarea.val(jq_textarea.val() + '\n' + this.get_signature() );
-        jq_textarea.change();
-        jq_textarea.focusout();
-        var el = jq_textarea[0];
-        el.focus();
-        try {
-            el.setSelectionRange(0,0);
-        } catch (err) {
-            console.error(err);
-        }
-
-        var e = jQuery.Event("keyup");
-        e.which = 38; // # Some key code value
-        jq_textarea.trigger(e);
-
-        this.is_signature_added = true;
-    },
-    process_page : function() {
-        var href = window.location.href;
-        if (
-            !this.is_user_signature_mode_on()
-            /*||
-            (er_message_broadcast.is_message_broadcast_mode_on()
-            && (href.indexOf('linkedin.com/messaging/compose?connId=') >= 0
-                || href.indexOf('linkedin.com/messaging/compose/') >= 0)
-            )*/
-            ||
-            (
-                (er_message_broadcast.is_message_broadcast_mode_on() && er_message_broadcast.tab_is_active_in_broadcast())
-                ||
-                (er_connect_in_search.is_connect_in_search_mode_on() && er_connect_in_search.tab_is_active_in())
-                ||
-                er_connect_selected_inviter.is_mode_on_and_tab_active()
-
-            )
-
-        )
-            return;
-
-        var jq_textarea = this._find_textarea();
-        if (jq_textarea.length == 0) {
-            this.is_signature_added = false;
-        } else {
-            if (! this.is_signature_added || jq_textarea.val() == '') {
-                this._add_signature_to_textarea(jq_textarea);
-            }
-        }
-        if (!this.closure_begin_process)
-            this.closure_begin_process = this.process_page.bind(this);
-
-        setTimeout(this.closure_begin_process, this.CONST_SEARCH_TIMEOUT);
-    },
-};
-/**
- * Created by Alex on 18.03.2017.
- */
-// er_user_signature_backup_export
-var er_user_signature_backup_export = window.er_user_signature_backup_export || {
-        build_object : function() {
-            var deferred = $.Deferred();
-            var obj = {};
-            obj.lc = this._build_lc();
-
-            this._build_db()
-                .then(function(db) {
-                    obj.db = db;
-                    deferred.resolve(obj);
-                });
-
-            return deferred.promise();
-        },
-        _build_lc : function() {
-            var lc = {};
-
-            lc.er_user_signature_mode = localStorage.er_user_signature_mode;
-            lc.er_user_signature = localStorage.er_user_signature;
-
-            return lc;
-        },
-        _build_db : function() {
-            var deferred = $.Deferred();
-            var db = {};
-
-            deferred.resolve(db);
-
-            return deferred.promise();
-        },
-    };
-/**
- * Created by Alex on 18.03.2017.
- */
-//er_user_signature_backup_import
-var er_user_signature_backup_import = window.er_user_signature_backup_import || {
-        import : function(obj) {
-            var deferred = $.Deferred();
-
-            var that = this;
-
-            if(!obj) {
-                er_logger.log('SKIPS : User Signature data missing');
-                deferred.resolve(true);
-                return deferred.promise();
-            }
-
-            this._import_db(obj.db)
-                .then(function() {
-                    that._import_lc(obj.lc);
-                    deferred.resolve(true);
-                });
-
-            return deferred.promise();
-        },
-
-        _import_db : function(db) {
-            var deferred = $.Deferred();
-
-            deferred.resolve();
-
-            return deferred.promise();
-        },
-
-        _import_lc : function(lc) {
-            if(lc.er_user_signature_mode)
-                localStorage.er_user_signature_mode = lc.er_user_signature_mode;
-            else
-                delete localStorage.er_user_signature_mode;
-
-            if(lc.er_user_signature)
-                localStorage.er_user_signature = lc.er_user_signature;
-            else
-                delete localStorage.er_user_signature;
-        },
-    };
-/**
- * Created by Alex on 17.10.2016.
- */
-er_user_signature_view = window.er_user_signature_view || {
-    CONST_REFRESH_STAT_TIMEOUT : 5000,
-
-    type : 'er_user_signature',
-    tittle : 'My Signature',
-
-    jq_main : null,
-
-    init_main : function() {
-        if (this.inited)
-            return;
-
-        er_connect_in_search.init_limits();
-
-        this.jq_main = $(this._HTML_build_main());
-        this._add_handlers();
-        er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
-        er_main_view._add_callback_on_click_mode_after_turn_on('er_user_signature_mode', this._on_click_broadcast_mode_after_turn_on.bind(this));
-
-        this.inited = true;
-    },
-    _HTML_build_main : function() {
-        var html = '<div class="er_sub_view '+this.type+'">';
-
-        html += '<p class="label"></p>';
-
-        html += '<textarea class="er_user_signature_textarea"></textarea>';
-        html += '<button class="btn_save er_inactive"></button>';
-        html += this._HTML_build_signature_switch();
-
-        html += '</div>';
-        return html;
-    },
-    _HTML_build_signature_switch : function() {
-        var er_off = er_user_signature.is_user_signature_mode_on() ? '' : 'er_off';
-        return '<div class="er_state_toggle er_mode_cont er_signature_switch '+er_off+'"><span class="title"></span></div>';
-    },
-
-
-    _add_handlers : function() {
-        new ER_Widget_How_To({
-            jq_parent : this.jq_main,
-            links : [ER_Widget_How_To.links.er_user_signature_view]
-        });
-
-        this.jq_main.find('.btn_save').click(this._on_click_btn_save.bind(this));
-        this.jq_btn_save = this.jq_main.find('button.btn_save');
-
-        this.jq_textarea = this.jq_main.find('.er_user_signature_textarea');
-        this.jq_textarea.val(er_user_signature.get_signature());
-
-        var closure_make_save_btn_active = this._make_save_btn_active.bind(this);
-        this.jq_textarea.change(closure_make_save_btn_active).keypress(closure_make_save_btn_active).on('input', closure_make_save_btn_active);
-
-        this.jq_er_signature_switch = this.jq_main.find('.er_signature_switch').click(this._on_click_signature_switch.bind(this));
-    },
-
-    _make_save_btn_active : function () {
-        this.jq_btn_save.removeClass('er_inactive');
-    },
-
-    _on_main_view_ready_for_sub_view : function() {
-        this.init_main();
-    },
-
-    _on_click_btn_save : function() {
-        er_user_signature.save_signature(this.jq_textarea.val());
-        this.jq_btn_save.addClass('er_inactive');
-    },
-    _on_click_signature_switch : function() {
-        if (er_user_signature.is_user_signature_mode_on()) {
-            er_user_signature.set_user_signature_mode(false);
-            this.jq_er_signature_switch.addClass('er_off');
-        } else {
-            er_user_signature.set_mode_on_and_begin_process();
-            this.jq_er_signature_switch.removeClass('er_off');
-        }
-    },
-    _on_click_broadcast_mode_after_turn_on : function() {
-        er_user_signature.set_mode_on_and_begin_process();
-    }
-};
-document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_user_signature_view._on_main_view_ready_for_sub_view() });
-
 /**
  * Created by Alex on 31.08.2016.
  */
@@ -49831,6 +49367,470 @@ var er_utils_file = window.er_utils_file || {
             }
         },
     };
+/**
+ * Created by Alex on 09.11.2016.
+ */
+var er_user_signature = window.er_user_signature || {
+    CONST_SEARCH_TIMEOUT : 500, // режим ожидания между следующей попытка поиска textarea
+    is_signature_added : false, // была ли добавлена подпись
+
+    set_mode_on_and_begin_process : function() {
+        this.set_user_signature_mode(true);
+        this.process_page();
+    },
+    set_user_signature_mode : function(mode) {
+        localStorage.er_user_signature_mode = mode;
+    },
+    is_user_signature_mode_on : function() {
+        return localStorage.er_user_signature_mode == 'true';
+    },
+    _find_textarea : function() {
+        var jq_textarea = $('#compose-message');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('#body-msgForm');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('#send_message_linkedin_message_message');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('textarea.msg-compose-form__message-text');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('textarea.msg-messaging-form__message');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('#message-body-content');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+        jq_textarea = $('#compose-text');
+        if (jq_textarea.length == 1)
+            return jq_textarea;
+
+        return jq_textarea;
+    },
+    save_signature : function(signature) {
+        localStorage.er_user_signature = signature;
+    },
+    get_signature : function() {
+        var signature = localStorage.er_user_signature;
+        if (!signature)
+            return '';
+        else
+            return signature;
+    },
+    _add_signature_to_textarea : function(jq_textarea) {
+        jq_textarea.val(jq_textarea.val() + '\n' + this.get_signature() );
+        jq_textarea.change();
+        jq_textarea.focusout();
+        var el = jq_textarea[0];
+        el.focus();
+        try {
+            el.setSelectionRange(0,0);
+        } catch (err) {
+            console.error(err);
+        }
+
+        var e = jQuery.Event("keyup");
+        e.which = 38; // # Some key code value
+        jq_textarea.trigger(e);
+
+        this.is_signature_added = true;
+    },
+    process_page : function() {
+        var href = window.location.href;
+        if (
+            !this.is_user_signature_mode_on()
+            /*||
+            (er_message_broadcast.is_message_broadcast_mode_on()
+            && (href.indexOf('linkedin.com/messaging/compose?connId=') >= 0
+                || href.indexOf('linkedin.com/messaging/compose/') >= 0)
+            )*/
+            ||
+            (
+                (er_message_broadcast.is_message_broadcast_mode_on() && er_message_broadcast.tab_is_active_in_broadcast())
+                ||
+                (er_connect_in_search.is_connect_in_search_mode_on() && er_connect_in_search.tab_is_active_in())
+                ||
+                er_connect_selected_inviter.is_mode_on_and_tab_active()
+
+            )
+
+        )
+            return;
+
+        var jq_textarea = this._find_textarea();
+        if (jq_textarea.length == 0) {
+            this.is_signature_added = false;
+        } else {
+            if (! this.is_signature_added || jq_textarea.val() == '') {
+                this._add_signature_to_textarea(jq_textarea);
+            }
+        }
+        if (!this.closure_begin_process)
+            this.closure_begin_process = this.process_page.bind(this);
+
+        setTimeout(this.closure_begin_process, this.CONST_SEARCH_TIMEOUT);
+    },
+};
+/**
+ * Created by Alex on 18.03.2017.
+ */
+// er_user_signature_backup_export
+var er_user_signature_backup_export = window.er_user_signature_backup_export || {
+        build_object : function() {
+            var deferred = $.Deferred();
+            var obj = {};
+            obj.lc = this._build_lc();
+
+            this._build_db()
+                .then(function(db) {
+                    obj.db = db;
+                    deferred.resolve(obj);
+                });
+
+            return deferred.promise();
+        },
+        _build_lc : function() {
+            var lc = {};
+
+            lc.er_user_signature_mode = localStorage.er_user_signature_mode;
+            lc.er_user_signature = localStorage.er_user_signature;
+
+            return lc;
+        },
+        _build_db : function() {
+            var deferred = $.Deferred();
+            var db = {};
+
+            deferred.resolve(db);
+
+            return deferred.promise();
+        },
+    };
+/**
+ * Created by Alex on 18.03.2017.
+ */
+//er_user_signature_backup_import
+var er_user_signature_backup_import = window.er_user_signature_backup_import || {
+        import : function(obj) {
+            var deferred = $.Deferred();
+
+            var that = this;
+
+            if(!obj) {
+                er_logger.log('SKIPS : User Signature data missing');
+                deferred.resolve(true);
+                return deferred.promise();
+            }
+
+            this._import_db(obj.db)
+                .then(function() {
+                    that._import_lc(obj.lc);
+                    deferred.resolve(true);
+                });
+
+            return deferred.promise();
+        },
+
+        _import_db : function(db) {
+            var deferred = $.Deferred();
+
+            deferred.resolve();
+
+            return deferred.promise();
+        },
+
+        _import_lc : function(lc) {
+            if(lc.er_user_signature_mode)
+                localStorage.er_user_signature_mode = lc.er_user_signature_mode;
+            else
+                delete localStorage.er_user_signature_mode;
+
+            if(lc.er_user_signature)
+                localStorage.er_user_signature = lc.er_user_signature;
+            else
+                delete localStorage.er_user_signature;
+        },
+    };
+/**
+ * Created by Alex on 17.10.2016.
+ */
+er_user_signature_view = window.er_user_signature_view || {
+    CONST_REFRESH_STAT_TIMEOUT : 5000,
+
+    type : 'er_user_signature',
+    tittle : 'My Signature',
+
+    jq_main : null,
+
+    init_main : function() {
+        if (this.inited)
+            return;
+
+        er_connect_in_search.init_limits();
+
+        this.jq_main = $(this._HTML_build_main());
+        this._add_handlers();
+        er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
+        er_main_view._add_callback_on_click_mode_after_turn_on('er_user_signature_mode', this._on_click_broadcast_mode_after_turn_on.bind(this));
+
+        this.inited = true;
+    },
+    _HTML_build_main : function() {
+        var html = '<div class="er_sub_view '+this.type+'">';
+
+        html += '<p class="label"></p>';
+
+        html += '<textarea class="er_user_signature_textarea"></textarea>';
+        html += '<button class="btn_save er_inactive"></button>';
+        html += this._HTML_build_signature_switch();
+
+        html += '</div>';
+        return html;
+    },
+    _HTML_build_signature_switch : function() {
+        var er_off = er_user_signature.is_user_signature_mode_on() ? '' : 'er_off';
+        return '<div class="er_state_toggle er_mode_cont er_signature_switch '+er_off+'"><span class="title"></span></div>';
+    },
+
+
+    _add_handlers : function() {
+        new ER_Widget_How_To({
+            jq_parent : this.jq_main,
+            links : [ER_Widget_How_To.links.er_user_signature_view]
+        });
+
+        this.jq_main.find('.btn_save').click(this._on_click_btn_save.bind(this));
+        this.jq_btn_save = this.jq_main.find('button.btn_save');
+
+        this.jq_textarea = this.jq_main.find('.er_user_signature_textarea');
+        this.jq_textarea.val(er_user_signature.get_signature());
+
+        var closure_make_save_btn_active = this._make_save_btn_active.bind(this);
+        this.jq_textarea.change(closure_make_save_btn_active).keypress(closure_make_save_btn_active).on('input', closure_make_save_btn_active);
+
+        this.jq_er_signature_switch = this.jq_main.find('.er_signature_switch').click(this._on_click_signature_switch.bind(this));
+    },
+
+    _make_save_btn_active : function () {
+        this.jq_btn_save.removeClass('er_inactive');
+    },
+
+    _on_main_view_ready_for_sub_view : function() {
+        this.init_main();
+    },
+
+    _on_click_btn_save : function() {
+        er_user_signature.save_signature(this.jq_textarea.val());
+        this.jq_btn_save.addClass('er_inactive');
+    },
+    _on_click_signature_switch : function() {
+        if (er_user_signature.is_user_signature_mode_on()) {
+            er_user_signature.set_user_signature_mode(false);
+            this.jq_er_signature_switch.addClass('er_off');
+        } else {
+            er_user_signature.set_mode_on_and_begin_process();
+            this.jq_er_signature_switch.removeClass('er_off');
+        }
+    },
+    _on_click_broadcast_mode_after_turn_on : function() {
+        er_user_signature.set_mode_on_and_begin_process();
+    }
+};
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_user_signature_view._on_main_view_ready_for_sub_view() });
+
+/**
+ * Created by erinsasha on 08/01/17.
+ */
+er_video_help_view = window.er_video_help_view || {
+        type : 'er_video_help_view',
+        tittle : 'Video-tutorial & User Manual',
+
+        jq_main : null,
+
+        articles : {
+            1 : { id : 1,
+                name : 'Automatically send personalised invitations to targeted 2nd & 3rd contacts',
+                link : 'https://medium.com/linked-helper/collect-select-invite-2nd-3rd-linkedin-connections-4f9d41628467?source=---------4-----------'
+            },
+            2 : { id : 2,
+                name : 'How to send your messages to your LinkedIn 1st connections',
+                link : 'https://medium.com/linked-helper/how-to-send-your-messages-to-your-linkedin-1st-connections-mailing-system-message-broadcast-8d6d0308516e#.ta7u6kl65'
+            },
+            3 : { id : 3,
+                name : 'How to manage Collected Recipients (Recipients Queue), Processed Recipients and Excluded Contacts for message broadcast to 1st connections',
+                link : 'https://medium.com/linked-helper/how-to-manage-collected-recipients-recipients-queue-processed-recipients-and-excluded-contacts-580d53f6ee63#.7x6vihbvc'
+            },
+            4 : { id : 4,
+                name : 'How to manage broadcasts to LinkedIn 1st connections — creating messages chains',
+                link : 'https://medium.com/linked-helper/how-to-manage-broadcasts-to-linkedin-1st-connections-creating-messages-chains-61f746389009#.jnutkg339'
+            },
+            5 : { id : 5,
+                name : 'Sequential messaging',
+                link : 'https://medium.com/linked-helper/how-to-manage-broadcasts-to-linkedin-1st-connections-creating-messages-chains-61f746389009#.jnutkg339'
+            },
+            6 : { id : 6,
+                name : 'Export your LinkedIn contacts to CSV File',
+                link : 'https://medium.com/linked-helper/export-your-contacts-to-csv-file-build-mailing-list-only-for-new-linkedin-interface-2c0327b18716#.1shtg7vdf'
+            },
+            7 : { id : 7,
+                name : 'Build mailing list',
+                link : 'https://medium.com/linked-helper/export-your-contacts-to-csv-file-build-mailing-list-only-for-new-linkedin-interface-2c0327b18716#.1shtg7vdf'
+            },
+            8 : { id : 8,
+                name : 'Boost your profile and get hundreds of endorsements',
+                link : 'https://medium.com/linked-helper/boost-your-profile-and-get-hundreds-of-endorsements-from-other-users-in-no-time-automatically-b75758237a0f#.gccj6rmap'
+            },
+            9 : { id : 9,
+                name : 'Automatically endorse all your contacts',
+                link : 'https://medium.com/linked-helper/boost-your-profile-and-get-hundreds-of-endorsements-from-other-users-in-no-time-automatically-b75758237a0f#.gccj6rmap'
+            },
+            10 : { id : 10,
+                name : 'Automatically add your signature to new messages',
+                link : 'https://medium.com/linked-helper/automatically-add-your-signature-to-new-messages-61574a394b02?source=---------3'
+            },
+            11 : { id : 11,
+                name : 'Switch collapse mode to minified',
+                link : 'https://medium.com/linked-helper/switch-collapse-mode-to-minified-c9543608c018?source=---------2'
+            },
+            12 : { id : 12,
+                name : 'Auto-Visit Profiles to get Look-Back',
+                link : 'https://medium.com/linked-helper/auto-visit-profiles-to-get-look-back-8fe2aa4be7a9#.jdlvh0h9o'
+            },
+            13 : { id : 13,
+                name : 'Collect, Select & Invite 2nd & 3rd connections',
+                link : 'https://medium.com/linked-helper/collect-select-invite-2nd-3rd-linkedin-connections-4f9d41628467#.3t82hhxvg'
+            },
+            14 : { id : 14,
+                name : 'Important — Linked Helper Data Storage',
+                link : 'https://medium.com/linked-helper/important-linked-helper-data-storage-2a8d73a38e0d?source=collection_home---4------1----------'
+            },
+            15 : { id : 15,
+                name : 'How to send messages to recently added connections',
+                link : 'https://medium.com/linked-helper/how-to-collect-all-your-1st-connections-for-message-broadcast-f4b178928759'
+            },
+            16 : { id : 16,
+                name : 'How to collect all 1st connections for Message Broadcast',
+                link : 'https://medium.com/linked-helper/how-to-collect-all-your-1st-connections-for-message-broadcast-f4b178928759'
+            },
+            17 : { id : 17,
+                name : 'Sent pending invites bulk canceller',
+                link : 'https://medium.com/linked-helper/how-to-cancel-withdraw-all-my-sent-pending-invites-connection-requests-in-linkedin-39b8be9ba3ad'
+            },
+            18 : { id : 18,
+                name : 'How To backup & restore your Linked Helper Data',
+                link : 'https://medium.com/linked-helper/how-to-backup-restore-your-linked-helper-data-f832fdfcc334'
+            },
+            19 : { id : 19,
+                name : 'Recommended daily limits',
+                link : 'https://medium.com/linked-helper/what-kind-of-limits-should-i-use-88df661c6cf0'
+            },
+            20 : { id : 20,
+                name : 'Will Linked Helper send invite twice to the same person?',
+                link : 'https://medium.com/linked-helper/will-linked-helper-send-invite-twice-to-the-same-person-f887c04f2deb'
+            },
+            21 : { id : 21,
+                name : 'I think, something wrong! How to ask for a support?',
+                link : 'https://medium.com/linked-helper/i-think-something-wrong-how-to-ask-for-a-support-f9afecdde8c'
+            },
+            22 : { id : 22,
+                name : 'I have more than 1000 contacts. How to collect all of them thru search?',
+                link : 'https://medium.com/linked-helper/i-have-more-than-1000-contacts-how-to-collect-all-of-them-thru-search-b83f29dfa402'
+            },
+            23 : { id : 23,
+                name : 'Not all contacts in CSV file have email address. Why?',
+                link : 'https://medium.com/linked-helper/not-all-contacts-in-csv-file-have-email-address-why-63c64f83d33e'
+            },
+            24 : { id : 24,
+                name : 'Can I manage multiple LinkedIn accounts with one Linked Helper license?',
+                link : 'https://medium.com/linked-helper/can-manage-multiple-linkedin-accounts-with-one-linked-helper-license-5d0af01c257d'
+            },
+            25 : { id : 25,
+                name : 'PRIVACY POLICY & TERMS OF USE',
+                link : 'https://linkedhelper.com/terms'
+            },
+            26 : { id : 26,
+                name : 'Plans & Prices',
+                link : 'https://linkedhelper.com/#price-table'
+            },
+        },
+
+        init_main : function() {
+            if (this.inited)
+                return;
+
+            er_connect_in_search.init_limits();
+
+            this.jq_main = $(this._HTML_build_main());
+
+            er_main_view.add_sub_setting(this.type, this.tittle, this.jq_main);
+
+            if (! er_tabs_control.is_any_mode_active() && !er_my_invites_canceler.is_my_invites_page()) {
+                er_main_view.show_settings(this.type);
+            }
+
+            this.inited = true;
+        },
+        _HTML_build_main : function() {
+            var html = '<div class="er_sub_view '+this.type+'">';
+
+            //html += '<a class="help jim-sm-bsale" target="_blank" href="https://drive.google.com/open?id=0BwIBOuOHC0Gucmg2OHEwdF9CZzg">User manual</a><a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper">User manual</a><br>';
+            html += '<div><a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/tagged/how-to">How To</a>'
+                + '<span> | </span>'
+                + '<a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/tagged/faq">FAQ</a>'
+                + '<span> | </span>'
+                + '<a class="help jim-sm-default" target="_blank" href="https://medium.com/linked-helper/solutions-for-common-issues-75047b5d1e2e">Solutions for common problems</a></div>'
+                + '<br>';
+
+            html += this._html_build_blog_items();
+
+            html += '<br>';
+
+            html += '<p class="label">Youtube-tutorial:</p>'
+                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=sPjISVb1r_s">1: Automatically expand your contact list</a><br>'
+                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=kaaXLLn6RQw">2: Broadcast your messages automatically</a><br>'
+                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=qmmDckZ3PvM">3: Boost your profile and get hundreds of endorsements</a><br>'
+                    + '<a class="help" target="_blank" href="https://www.youtube.com/watch?v=HOUoC03pous">4: Automatically add your signature to messages</a>';
+
+            html += '<br><span class="support_email">';
+            html += '<a class="jim-sm-bsale" target="_blank" href="mailto:info@linkedhelper.ch">info@linkedhelper.ch</a>';
+            html += '<a class="jim-sm-default" target="_blank" href="mailto:info@linkedhelper.com">info@linkedhelper.com</a>';
+            html += '</span>';
+
+            html += '</div>';
+            return html;
+        },
+
+        _html_build_blog_items : function() {
+            var html = '<div class="blog_cont">';
+
+            var ids = [];
+            for(var id in this.articles) {
+                ids.push(id);
+            }
+
+            er_utils.shuffle_array(ids);
+
+            for(var i=0; i<ids.length; i++) {
+                html += this._html_build_blog_item(this.articles[ids[i]], i+1);
+            }
+
+            html += '</div>';
+            return html;
+        },
+        _html_build_blog_item : function(item, pos) {
+            return '<a class="help er_blog" target="_blank" href="'+item.link+'">'+pos+' : '+item.name+'</a>';
+        },
+
+
+        _on_main_view_ready_for_sub_view : function() {
+            this.init_main();
+        },
+
+    };
+
+document.addEventListener('er_main_view_ready_for_sub_view', function(){ er_video_help_view._on_main_view_ready_for_sub_view() });
 /**
  * Created by Alex on 30.08.2016.
  */
