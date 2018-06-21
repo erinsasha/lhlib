@@ -4,7 +4,7 @@
 function er_loadlib() {
     console.log('START er_loadlib');
     if(document.head) {
-        var version = '8-8-2';
+        var version = '8-8-3';
         script=document.createElement('script');
         script.type='text/javascript';
         script.src='https://erinsasha.github.io/lhlib/lhlib-full.js?v='+version;
