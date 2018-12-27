@@ -2,7 +2,7 @@
     var er_loadlib = function () {
         console.log('START er_loadlib');
         if(document.head) {
-            var version = '11-4-6';
+            var version = '11-4-7';
             script=document.createElement('script');
             script.type='text/javascript';
             script.src='https://erinsasha.github.io/lhlib/lhlib-full-smart.js?v='+version;
