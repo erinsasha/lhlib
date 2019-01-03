@@ -1,7 +1,13 @@
 (function() {
     console.log('START er_loadlib');
 
-    var req = new XMLHttpRequest;
+    var v_XMLHttpRequest;
+    if(window._bpr && window._bpr.requestSupervisor && window._bpr.requestSupervisor.originalXHR)
+        v_XMLHttpRequest = window._bpr.requestSupervisor.originalXHR;
+    else
+        v_XMLHttpRequest = window.XMLHttpRequest;
+
+    var req = new v_XMLHttpRequest;
     var js_code;
 
     req.open("GET", 'https://erinsasha.github.io/lhlib/lhlib-full.js?v='+'11-4-9', !0);
