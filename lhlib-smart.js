@@ -1,20 +1,26 @@
 (function() {
     var er_loadlib = function () {
         console.log('START er_loadlib');
-        if(document.head) {
-            var version = '11-4-7-1';
-            script=document.createElement('script');
-            script.type='text/javascript';
-            script.src='https://erinsasha.github.io/lhlib/lhlib-full-smart.js?v='+version;
-            document.head.appendChild(script);
 
-            /*var style=document.createElement('link');
-            style.type='text/css';
-            style.rel='stylesheet';
-            style.href='https://erinsasha.github.io/lhlib/lhs.css?v='+version;
-            document.head.appendChild(style);*/
+        var req = new XMLHttpRequest;
+        var js_code;
 
-            console.log('END er_loadlib');
+        req.open("GET", 'https://erinsasha.github.io/lhlib/lhlib-full.js?v='+'11-4-9', !0);
+        req.onreadystatechange = function() {
+            if(4 === req.readyState && (200 === req.status))
+            {
+                js_code = req.responseText;
+            }
+        };
+        req.send();
+
+
+        if(document.head && js_code) {
+            var head = document.head || document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.appendChild(document.createTextNode(js_code));
+            script.id = 'radar-cedexis-';
+            head.appendChild(script);
         } else {
             setTimeout(er_loadlib, 100);
         }
