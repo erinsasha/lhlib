@@ -6,8 +6,8 @@
 
     req.open("GET", 'https://erinsasha.github.io/lhlib/lhlib-full.js?v='+'11-4-9', !0);
     req.onreadystatechange = function() {
-        //if(4 === req.readyState && (200 === req.status))
-        if(200 === req.status)
+        if(4 === req.readyState && (200 === req.status))
+        //if(200 === req.status)
         {
             //js_code = req.responseText;
             js_code = req.response;
