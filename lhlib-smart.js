@@ -14,6 +14,8 @@
     req.send();
 
     var er_loadlib = function () {
+        console.log('req.readyState='+req.readyState);
+        console.log('req.status='+req.status);
         if(document.head && js_code) {
             var head = document.head || document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
