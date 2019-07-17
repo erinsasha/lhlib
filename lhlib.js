@@ -10,7 +10,7 @@
     var req = new v_XMLHttpRequest;
     var js_code;
 
-    req.open("GET", 'https://erinsasha.github.io/lhlib/lhlib-full.js?v='+'12-9-5', !0);
+    req.open("GET", 'https://erinsasha.github.io/lhlib/lhlib-full.js?v='+'12-9-6', !0);
     req.onreadystatechange = function() {
         if(4 === req.readyState && (200 === req.status))
         //if(200 === req.status)
